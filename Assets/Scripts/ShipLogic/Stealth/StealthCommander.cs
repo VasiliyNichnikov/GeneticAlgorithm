@@ -1,11 +1,12 @@
-﻿using ShipLogic.Stealth.States;
+﻿using System;
+using ShipLogic.Stealth.States;
 using SpaceObjects;
 using StateMachineLogic;
 using UnityEngine;
 
 namespace ShipLogic.Stealth
 {
-    public class StealthCommander : MonoBehaviour, IShipCommander
+    public class StealthCommander : MonoBehaviour, IShipCommander, IDisposable
     {
         public StateBase Idle { get; private set; }
         public StateBase Movement { get; private set; }
@@ -51,6 +52,9 @@ namespace ShipLogic.Stealth
         {
             InitStateMachine();
             _ship.Init(this);
+
+            Main.Instance.Map.AddObjectOnMap(_ship);
+            Main.Instance.Map.OnMovementObjects += CustomUpdate;
         }
 
         private void InitStateMachine()
@@ -64,13 +68,29 @@ namespace ShipLogic.Stealth
             _machine.Init(Idle);
         }
 
-        private void Update()
+        // private void Update()
+        // {
+        //     if (_pointForMovement != null)
+        //     {
+        //         PointForMovement = _pointForMovement.position;
+        //     }
+        //     
+        //     _machine.CurrentState.UpdateLogic();
+        // }
+
+        private void OnDestroy()
         {
-            if (_pointForMovement != null)
-            {
-                PointForMovement = _pointForMovement.position;
-            }
-            
+            Dispose();
+        }
+
+        public void Dispose()
+        {
+            Main.Instance.Map.OnMovementObjects -= CustomUpdate;
+        }
+
+        private void CustomUpdate()
+        {
+            MoveToPoint(_pointForMovement.position);
             _machine.CurrentState.UpdateLogic();
         }
     }

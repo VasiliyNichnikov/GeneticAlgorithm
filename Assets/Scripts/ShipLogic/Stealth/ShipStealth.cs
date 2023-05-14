@@ -4,7 +4,6 @@ namespace ShipLogic.Stealth
 {
     public class ShipStealth : ShipBase
     {
-
         protected override float OnBoostSpeed(float currentSpeed)
         {
             if (currentSpeed >= MaximumSpeed)
@@ -37,7 +36,7 @@ namespace ShipLogic.Stealth
             var angleRotation = Vector3.Angle(direction, transform.forward);
             // todo константы в настройки
             // думаю эти значения тоже нужно подбирать с помощью алгоритм, так как они зависят на результат сражений
-            Debug.LogWarning($"AngleRotation: {angleRotation}. Distance: {Vector3.Distance(Position, ship.Position)}");
+            // Debug.LogWarning($"AngleRotation: {angleRotation}. Distance: {Vector3.Distance(Position, ship.Position)}");
             return angleRotation <= 10f && Vector3.Distance(Position, ship.Position) <= Detector.Radius;
         }
 

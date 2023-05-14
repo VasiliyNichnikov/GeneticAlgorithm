@@ -1,14 +1,13 @@
-﻿using ShipLogic.Stealth;
+﻿using FindingPath;
+using ShipLogic.Stealth;
 using SpaceObjects;
 using UnityEngine;
 
 namespace ShipLogic
 {
-    public interface ITargetToAttack : IDetectedObject
+    public interface ITargetToAttack : IDetectedObject, IObjectOnMap
     {
         Vector3 Position { get; }
-        bool IsDead { get; }
-        bool IsShip { get; }
         PlayerType PlayerType { get; }
         /// <summary>
         /// Видим для выбранного корабля

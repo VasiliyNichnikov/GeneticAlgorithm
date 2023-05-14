@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using FindingPath;
 using ShipLogic;
 using ShipLogic.Stealth;
 using UnityEngine;
@@ -43,7 +44,7 @@ namespace ProjectileLogic
         private void OnTriggerEnter(Collider other)
         {
             var target = other.GetComponent<ITargetToAttack>();
-            if (target == null || target.PlayerType == _type || !target.IsShip)
+            if (target == null || target.PlayerType == _type || target.TypeObject != MapObjectType.Ship)
             {
                 return;
             }

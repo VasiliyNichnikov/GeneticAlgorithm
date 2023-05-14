@@ -1,5 +1,4 @@
 ﻿using StateMachineLogic;
-using UnityEngine;
 
 namespace ShipLogic.Stealth.States
 {
@@ -25,7 +24,7 @@ namespace ShipLogic.Stealth.States
             base.UpdateLogic();
             // Если у нас обнаружен враг, идем в бой, при условие что у нас есть шансы выжить
             // Если дана точка для движения, двигаемся к ней
-
+            ;
             // todo в будущем переделаю разведчика
             if (_commander.Enemy != null)
             {

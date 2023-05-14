@@ -1,4 +1,6 @@
-﻿namespace StateMachineLogic
+﻿using UnityEngine;
+
+namespace StateMachineLogic
 {
     public abstract class StateBase
     {
