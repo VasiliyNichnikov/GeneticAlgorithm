@@ -12,7 +12,12 @@
             throw new System.NotImplementedException();
         }
 
-        public override void PreparingForBattle(ITargetToAttack shipEnemy, out bool stack)
+        public override bool SeeOtherShip(ITargetToAttack ship)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void PreparingForBattle(ITargetToAttack shipEnemy)
         {
             throw new System.NotImplementedException();
         }

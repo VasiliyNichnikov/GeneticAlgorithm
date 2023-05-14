@@ -1,7 +1,4 @@
-﻿using System;
-using ShipLogic.Stealth.States;
-using StateMachineLogic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ShipLogic.Stealth
 {
@@ -33,13 +30,24 @@ namespace ShipLogic.Stealth
             return currentSpeed;
         }
 
-        public override void PreparingForBattle(ITargetToAttack shipEnemy, out bool stack)
+        public override bool SeeOtherShip(ITargetToAttack ship)
+        {
+            var direction = ship.Position - Position;
+            direction.y = 0.0f;
+            var angleRotation = Vector3.Angle(direction, transform.forward);
+            // todo константы в настройки
+            // думаю эти значения тоже нужно подбирать с помощью алгоритм, так как они зависят на результат сражений
+            Debug.LogWarning($"AngleRotation: {angleRotation}. Distance: {Vector3.Distance(Position, ship.Position)}");
+            return angleRotation <= 10f && Vector3.Distance(Position, ship.Position) <= Detector.Radius;
+        }
+
+        public override void PreparingForBattle(ITargetToAttack shipEnemy)
         {
             // При подготовке к бою нужно прилететь на ближайшее расстояние к цели
             // на минимальной скорости и крутиться пока не будет обнаружен враг
             Engine.SetTarget(shipEnemy.Position);
             Engine.TurnToTarget(shipEnemy.Position);
-            stack = !Engine.Move();
+            Engine.Move();
         }
 
         private float GetSpeedStep()

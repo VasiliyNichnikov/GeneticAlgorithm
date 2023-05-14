@@ -1,5 +1,4 @@
 ﻿using StateMachineLogic;
-using UnityEngine;
 
 namespace ShipLogic.Stealth.States
 {
@@ -26,11 +25,8 @@ namespace ShipLogic.Stealth.States
             
             if (!_ship.SeeOtherShip(_commander.Enemy))
             {
-                _ship.PreparingForBattle(_commander.Enemy, out var stack);
-                if (!stack)
-                {
-                    return;
-                }
+                _ship.PreparingForBattle(_commander.Enemy);
+                return;
             }
 
             Machine.ChangeState(_commander.Attack);

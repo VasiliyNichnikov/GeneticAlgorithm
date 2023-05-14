@@ -56,7 +56,7 @@ namespace ShipLogic
         private float _percentageOfArmorAbsorption;
 
 
-        [SerializeField] private ShipDetector _detector;
+        [SerializeField] protected ShipDetector Detector;
 
         private IShipCommander _commander;
 
@@ -77,7 +77,7 @@ namespace ShipLogic
             Health = new ShipHealth(_minHealth, _maxHealth, _minArmor, _maxArmor, _percentageOfArmorAbsorption);
 
             _commander = commander;
-            _detector.OnObjectDetected += _commander.SendDetectedObject;
+            Detector.OnObjectDetected += _commander.SendDetectedObject;
         }
 
         /// <summary>
@@ -90,22 +90,13 @@ namespace ShipLogic
         /// </summary>
         protected abstract float OnSlowingDownSpeed(float currentSpeed);
 
-        public bool SeeOtherShip(ITargetToAttack ship)
-        {
-            var direction = ship.Position - Position;
-            direction.y = 0.0f;
-            var angleRotation = Vector3.Angle(direction, transform.forward);
-            // todo константы в настройки
-            // думаю эти значения тоже нужно подбирать с помощью алгоритм, так как они зависят на результат сражений
-            return angleRotation <= 10f && Vector3.Distance(Position, ship.Position) <= 70f;
-        }
+        public abstract bool SeeOtherShip(ITargetToAttack ship);
 
         /// <summary>
         /// Подготовка к бою
         /// </summary>
         /// <param name="shipEnemy">Корабль врага</param>
-        /// <param name="stack">если True, значит корабль застрял, нужно менять маршрут</param>
-        public abstract void PreparingForBattle(ITargetToAttack shipEnemy, out bool stack);
+        public abstract void PreparingForBattle(ITargetToAttack shipEnemy);
 
         public virtual void TurnOffEngine()
         {
@@ -137,11 +128,11 @@ namespace ShipLogic
 
         public void Dispose()
         {
-            if (_detector == null)
+            if (Detector == null)
             {
                 return;
             }
-            _detector.OnObjectDetected -= _commander.SendDetectedObject;
+            Detector.OnObjectDetected -= _commander.SendDetectedObject;
         }
 
 #if UNITY_EDITOR

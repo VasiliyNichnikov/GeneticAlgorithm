@@ -76,6 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca0b5ccfdce74667bfbd5a5fdc8b63e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _collider: {fileID: 8219072681705102836}
 --- !u!135 &8219072681705102836
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -261,7 +262,12 @@ MonoBehaviour:
   _damage: 0
   _speedProjectile: 0
   _gunpoints: []
-  _detector: {fileID: 6585846571788663809}
+  _maxHealth: 0
+  _minHealth: 0
+  _maxArmor: 0
+  _minArmor: 0
+  _percentageOfArmorAbsorption: 0
+  Detector: {fileID: 6585846571788663809}
 --- !u!54 &4924369377956430227
 Rigidbody:
   m_ObjectHideFlags: 0

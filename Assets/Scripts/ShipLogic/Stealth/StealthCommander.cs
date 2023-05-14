@@ -28,8 +28,7 @@ namespace ShipLogic.Stealth
         {
             if (detectedObject.ObjectType == DetectedObjectType.Ship && detectedObject is ShipBase ship)
             {
-                // todo нужна доработка
-                if (ship.PlayerType == PlayerType.Player1)
+                if (ship.PlayerType == _ship.PlayerType)
                 {
                     return;
                 }
