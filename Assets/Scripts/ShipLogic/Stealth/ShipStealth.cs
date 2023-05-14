@@ -35,6 +35,8 @@ namespace ShipLogic.Stealth
 
         public override void PreparingForBattle(ITargetToAttack shipEnemy, out bool stack)
         {
+            // При подготовке к бою нужно прилететь на ближайшее расстояние к цели
+            // на минимальной скорости и крутиться пока не будет обнаружен враг
             Engine.SetTarget(shipEnemy.Position);
             Engine.TurnToTarget(shipEnemy.Position);
             stack = !Engine.Move();
