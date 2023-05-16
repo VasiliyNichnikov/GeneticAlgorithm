@@ -60,32 +60,30 @@ namespace ShipLogic
 
         [SerializeField, Header("Процент поглощения урона"), Range(0, 100)]
         private float _percentageOfArmorAbsorption;
-        
+
         [SerializeField] protected ShipDetector Detector;
         [SerializeField] private PerimeterOfObject _perimeter;
-        
-        
+
+
         private IShipCommander _commander;
         private bool _isInitialized;
 
         protected ShipEngine Engine { get; private set; }
         protected ShipGun Gun { get; private set; }
         protected ShipHealth Health { get; private set; }
-        
 
-        public void Init(IShipCommander commander)
+
+        public void Init(IShipCommander commander, IFindingPath findingPath)
         {
             Engine = new ShipEngine(transform,
+                findingPath,
                 _radius,
-                OnBoostSpeed,
-                OnSlowingDownSpeed,
-                _minimumAngleRotation,
                 _minimumSpeed,
                 _rotationSpeed);
             Gun = new ShipGun(this, _gunpoints, _playerType, _rateOfFire, _damage, _speedProjectile);
             Health = new ShipHealth(_minHealth, _maxHealth, _minArmor, _maxArmor, _percentageOfArmorAbsorption);
             _commander = commander;
-            
+
             Detector.OnObjectDetected += _commander.SendDetectedObject;
             _isInitialized = true;
         }
@@ -142,7 +140,7 @@ namespace ShipLogic
             {
                 return;
             }
-            
+
             if (Detector != null)
             {
                 Detector.OnObjectDetected -= _commander.SendDetectedObject;
@@ -155,6 +153,18 @@ namespace ShipLogic
         {
             Gizmos.color = new Color(1, 0, 0, 0.25f);
             Gizmos.DrawSphere(transform.position, _radius);
+
+            Gizmos.color = Color.blue;
+            if (Engine == null || Engine.PathDebug.Length <= 0)
+            {
+                return;
+            }
+            var previewPoint = Engine.PathDebug[0];
+            for (var i = 0; i < Engine.PathDebug.Length - 1; i++)
+            {
+                Gizmos.DrawLine(previewPoint, Engine.PathDebug[i + 1]);
+                previewPoint = Engine.PathDebug[i + 1];
+            }
         }
 #endif
     }

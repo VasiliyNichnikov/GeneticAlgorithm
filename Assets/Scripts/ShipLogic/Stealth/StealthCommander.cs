@@ -51,7 +51,7 @@ namespace ShipLogic.Stealth
         private void Init()
         {
             InitStateMachine();
-            _ship.Init(this);
+            _ship.Init(this, Main.Instance.Map);
 
             Main.Instance.Map.AddObjectOnMap(_ship);
             Main.Instance.Map.OnMovementObjects += CustomUpdate;
@@ -67,16 +67,6 @@ namespace ShipLogic.Stealth
 
             _machine.Init(Idle);
         }
-
-        // private void Update()
-        // {
-        //     if (_pointForMovement != null)
-        //     {
-        //         PointForMovement = _pointForMovement.position;
-        //     }
-        //     
-        //     _machine.CurrentState.UpdateLogic();
-        // }
 
         private void OnDestroy()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using FindingPath;
 using UnityEngine;
 
 namespace ShipLogic
@@ -14,15 +15,12 @@ namespace ShipLogic
     {
         #region Speed
 
-        private float _currentSpeed;
-        private readonly float _minSpeed;
+        private readonly float _currentSpeed;
         private readonly float _rotationSpeed;
-
-        private readonly Func<float, float> _boostSpeed;
-        private readonly Func<float, float> _slowingDownSpeed;
 
         #endregion
 
+        private readonly IFindingPath _findingPath;
         private readonly Transform _shipTransform;
         private readonly float _radiusShip;
 
@@ -31,32 +29,37 @@ namespace ShipLogic
         private Vector3 _destination;
 
         private Vector3[] _currentPath;
+        
+        #if UNITY_EDITOR
+        public Vector3[] PathDebug = Array.Empty<Vector3>();
+        #endif
+        
 
-        private readonly float _minAngleRotation;
-
-        public ShipEngine(Transform shipTransform,
+        public ShipEngine(
+            Transform shipTransform,
+            IFindingPath findingPath,
             float radiusShip,
-            Func<float, float> boostSpeed,
-            Func<float, float> slowingDownSpeed,
-            float minAngleRotation,
-            float minSpeed,
+            float speed,
             float rotationSpeed)
         {
+            _findingPath = findingPath;
             _shipTransform = shipTransform;
             _radiusShip = radiusShip;
-            _minAngleRotation = minAngleRotation;
-            _boostSpeed = boostSpeed;
-            _slowingDownSpeed = slowingDownSpeed;
-            _currentSpeed = minSpeed;
+            _currentSpeed = speed;
             _rotationSpeed = rotationSpeed;
-            _minSpeed = minSpeed;
         }
 
         public void SetTarget(Vector3 target)
         {
+            if (_target == target)
+            {
+                return;
+            }
+            
             _pathIteration = 0;
             _target = target;
             _currentPath = CreateRoute();
+            PathDebug = _currentPath;
         }
 
         public void Move()
@@ -125,8 +128,13 @@ namespace ShipLogic
         /// </summary>
         private Vector3[] CreateRoute()
         {
-            // todo доделать
-            return new[] { _target };
+            var path = _findingPath.TryToFindPath(_shipTransform.position, _target, out var isFound);
+            if (!isFound)
+            {
+                Debug.LogWarning("Path not found");
+                return new[] { _target };
+            }
+            return path;
         }
     }
 }

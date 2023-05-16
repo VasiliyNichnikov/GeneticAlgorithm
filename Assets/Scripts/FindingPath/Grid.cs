@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using Utils;
 
 namespace FindingPath
@@ -38,11 +40,18 @@ namespace FindingPath
             }
             Debug.DrawLine(GetWorldPosition(0, _length), GetWorldPosition(_width, _length), Color.white, 100f);
             Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _length), Color.white, 100f);
+
+            SetValue(4, 5, 14);
         }
 
         private Vector3 GetWorldPosition(int x, int z)
         {
             return new Vector3(x, 0, z) * _cellSize + _originPosition;
+        }
+
+        public Vector3 GetWorldPosition(Vector3Int gridPosition)
+        {
+            return GetWorldPosition(gridPosition.x, gridPosition.z);
         }
 
         private void GetXZ(Vector3 worldPosition, out int x, out int z)
@@ -51,7 +60,7 @@ namespace FindingPath
             z = Mathf.FloorToInt((worldPosition - _originPosition).z / _cellSize);
         }
 
-        private Vector3Int GetXZ(Vector3 worldPosition)
+        public Vector3Int GetXZ(Vector3 worldPosition)
         {
             GetXZ(worldPosition, out var x, out var z);
             return new Vector3Int(x, 0, z);
@@ -124,6 +133,11 @@ namespace FindingPath
             {
                 for (var z = startZ; z <= endZ; z++)
                 {
+                    var currentValue = GetValue(x, z);
+                    if (currentValue != (int)MapObjectType.Empty && value != (int)MapObjectType.Empty)
+                    {
+                        continue;
+                    }
                     SetValue(x, z, value);
                 }
             }
