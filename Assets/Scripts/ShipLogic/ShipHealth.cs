@@ -1,5 +1,4 @@
 ﻿using System;
-using ShipLogic.Stealth;
 using UnityEngine;
 
 namespace ShipLogic
@@ -7,8 +6,13 @@ namespace ShipLogic
     public interface IShipHealth
     {
         event Action<float> OnUpdateHealth;
-        event Action<float> OnUpdateArmor; 
-
+        event Action<float> OnUpdateArmor;
+        
+        float CurrentHealth { get; }
+        float CurrentArmor { get; }
+        
+        string HealthStats { get; }
+        string ArmorStats { get; }
         bool IsDead { get; }
         bool IsArmorDestroyed { get; }
         void DealDamage(float damage);
@@ -18,6 +22,11 @@ namespace ShipLogic
     {
         public event Action<float> OnUpdateHealth;
         public event Action<float> OnUpdateArmor;
+        public float CurrentHealth => _currentHealth;
+        public float CurrentArmor => _currentArmor;
+        public string HealthStats => $"{_currentHealth}/{_maxHealth}";
+        public string ArmorStats => $"{_currentArmor}/{_maxArmor}";
+        public float MaxHealth => _maxHealth;
         public bool IsDead => _currentHealth <= _minHealth;
         public bool IsArmorDestroyed => _currentArmor <= _minArmor;
 
@@ -77,14 +86,13 @@ namespace ShipLogic
                 OnUpdateArmor?.Invoke(_currentArmor);
             }
 
-            if (damageReceived <= 0)
+            if (damageReceived < 0)
             {
                 Debug.LogError("Damage received cannot be negative");
                 return;
             }
 
             _currentHealth -= damageReceived;
-            Debug.Log($"Current health: {_currentHealth}");
             OnUpdateHealth?.Invoke(_currentHealth);
         }
     }

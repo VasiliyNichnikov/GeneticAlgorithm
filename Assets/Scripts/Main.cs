@@ -1,6 +1,6 @@
 ﻿using System;
-using Factory;
-using FindingPath;
+using ShipLogic;
+using UI.Dialog;
 using UnityEngine;
 
 public class Main : MonoBehaviour
@@ -9,16 +9,19 @@ public class Main : MonoBehaviour
     
     public static Main Instance { get; private set; }
 
-    public TrafficMap Map => _map;
-    public ShipProjectileFactory ProjectileFactory => _projectileFactory;
+    public DialogManager DialogManager => _dialogManager;
+    public MainShipParameters ShipParameters => _shipParameters;
     
-    [SerializeField] private ShipProjectileFactory _projectileFactory;
-    [SerializeField] private TrafficMap _map;
+    [SerializeField] private MainShipParameters _shipParameters;
+    [SerializeField] private RectTransform _canvasTransform;
 
+    private DialogManager _dialogManager;
+    
     private void Awake()
     {
         Instance = this;
-        _map.Init();
+
+        _dialogManager = new DialogManager(_canvasTransform);
     }
 
     private void Update()

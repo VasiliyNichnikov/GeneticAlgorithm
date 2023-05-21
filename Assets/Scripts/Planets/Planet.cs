@@ -12,10 +12,5 @@ namespace Planets
         public Vector3 RightTopPosition => _perimeter.RightTopPoint;
 
         [SerializeField] private PerimeterOfObject _perimeter;
-
-        private void Start()
-        {
-            Main.Instance.Map.AddObjectOnMap(this);
-        }
     }
 }

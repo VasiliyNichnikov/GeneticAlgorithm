@@ -1,134 +1,105 @@
 using System;
-using FindingPath;
-using ShipLogic.Stealth;
+using System.Linq;
+using HandlerClicks;
+using Players;
 using SpaceObjects;
 using UnityEngine;
 
 namespace ShipLogic
 {
-    public abstract class ShipBase : MonoBehaviour, ITargetToAttack, IDisposable
+    public abstract class ShipBase : MonoBehaviour, IObjectToClick, ITargetToAttack, IDisposable
     {
-        protected float MinimumSpeed => _minimumSpeed;
-        protected float MaximumSpeed => _maximumSpeed;
-        protected float Weight => _weight;
         public DetectedObjectType ObjectType => DetectedObjectType.Ship;
-        public bool IsShip => true;
         public PlayerType PlayerType => _playerType;
-
-        public MapObjectType TypeObject => MapObjectType.Ship;
-        public bool IsStatic => false;
-        public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
-        public Vector3 RightTopPosition => _perimeter.RightTopPoint;
-
         public Vector3 Position => transform.position;
+        public float ShipRadius => _shipData.RadiusShip;
+        protected float SpeedMovement { get; private set; }
+
         public bool IsDead => Health.IsDead;
 
-
-        /// <summary>
-        /// todo все параметры будут задаваться ботом
-        /// </summary>
-        [SerializeField, Header("Минимальная скорость")]
-        private float _minimumSpeed;
-
-        [SerializeField, Header("Максимальная скорость")]
-        private float _maximumSpeed;
-
-        [SerializeField, Header("Скорость вращения")]
-        private float _rotationSpeed;
-
-        [SerializeField, Header("Вес корабля (В тоннах)")]
-        private float _weight;
-
-        [SerializeField, Header("Минимальный угол вращения")]
-        private float _minimumAngleRotation;
-
-        [SerializeField, Header("Радиус корабля")]
-        private float _radius;
-
-        [SerializeField] private PlayerType _playerType;
-
-        [Space] [SerializeField, Header("Скорострельность")]
-        private float _rateOfFire;
-
-        [SerializeField] private float _damage;
-        [SerializeField] private float _speedProjectile;
-        [SerializeField] private Transform[] _gunpoints;
-        [Space] [SerializeField] private float _maxHealth;
-        [SerializeField] private float _minHealth;
-        [SerializeField] private float _maxArmor;
-        [SerializeField] private float _minArmor;
-
-        [SerializeField, Header("Процент поглощения урона"), Range(0, 100)]
-        private float _percentageOfArmorAbsorption;
+        public IShipHealth Health { get; private set; }
+        public IShipEngine Engine { get; private set; }
+        public abstract IShipGun Gun { get; protected set; }
 
         [SerializeField] protected ShipDetector Detector;
-        [SerializeField] private PerimeterOfObject _perimeter;
+        
+        // todo будет задаваться при создание корабля
+        [SerializeField] private PlayerType _playerType;
+        
+        
+        [SerializeField] private ShipSkinData[] _skins;
+        
+        public ShipData CalculatedShipData => _calculatedShipData;
+        public string NameCurrentState => _commander.NameCurrentState;
 
-
+        private ShipSkinData _shipData;
         private IShipCommander _commander;
         private bool _isInitialized;
+        private ShipData _calculatedShipData;
+        private ShipClickHandler _clickHandler;
 
-        protected ShipEngine Engine { get; private set; }
-        protected ShipGun Gun { get; private set; }
-        protected ShipHealth Health { get; private set; }
+        /// <summary>
+        /// Процент поглащения урона броней
+        /// </summary>
+        private const float PercentageOfArmorAbsorption = 45f;
 
 
-        public void Init(IShipCommander commander, IFindingPath findingPath)
+        private void Awake()
         {
-            Engine = new ShipEngine(transform,
-                findingPath,
-                _radius,
-                _minimumSpeed,
-                _rotationSpeed);
-            Gun = new ShipGun(this, _gunpoints, _playerType, _rateOfFire, _damage, _speedProjectile);
-            Health = new ShipHealth(_minHealth, _maxHealth, _minArmor, _maxArmor, _percentageOfArmorAbsorption);
-            _commander = commander;
+            foreach (var skin in _skins)
+            {
+                if (skin == null)
+                {
+                    continue;
+                }
 
-            Detector.OnObjectDetected += _commander.SendDetectedObject;
+                skin.gameObject.SetActive(false);
+            }
+        }
+
+
+        public virtual void Init(IShipCommander commander, ShipData data)
+        {
+            InitSkin(data);
+            _commander = commander;
+            Detector.Init(_playerType, commander);
             _isInitialized = true;
         }
 
-        /// <summary>
-        /// Ускорение корабля
-        /// </summary>
-        protected abstract float OnBoostSpeed(float currentSpeed);
-
-        /// <summary>
-        /// Замедление коробля
-        /// </summary>
-        protected abstract float OnSlowingDownSpeed(float currentSpeed);
-
         public abstract bool SeeOtherShip(ITargetToAttack ship);
 
-        /// <summary>
-        /// Подготовка к бою
-        /// </summary>
-        /// <param name="shipEnemy">Корабль врага</param>
-        public abstract void PreparingForBattle(ITargetToAttack shipEnemy);
-
-        public virtual void TurnOffEngine()
+        public abstract bool CanAttackOtherShip(ITargetToAttack ship);
+        
+        public void TurnOffEngine()
         {
+            if (!_isInitialized)
+            {
+                return;
+            }
+
+            _shipData.EffectsManager.TurnOffEngine();
         }
 
-        public virtual void TurnOnEngine()
+        public void TurnOnEngine()
         {
+            if (!_isInitialized)
+            {
+                return;
+            }
+
+            _shipData.EffectsManager.TurnOnEngine();
         }
 
-        public IShipEngine GetEngine()
+        public void DestroyShip()
         {
-            return Engine;
-        }
+            if (!_isInitialized)
+            {
+                return;
+            }
 
-        public IShipGun GetGun()
-        {
-            return Gun;
+            _shipData.EffectsManager.DestroyShip();
         }
-
-        public IShipHealth GetHealth()
-        {
-            return Health;
-        }
-
+        
         public void OnDestroy()
         {
             Dispose();
@@ -140,30 +111,67 @@ namespace ShipLogic
             {
                 return;
             }
-
-            if (Detector != null)
-            {
-                Detector.OnObjectDetected -= _commander.SendDetectedObject;
-            }
         }
+
+        private void InitSkin(ShipData data)
+        {
+            var shipData = _skins.FirstOrDefault(d => d.Skin == data.SkinType);
+            if (shipData == null)
+            {
+                Debug.LogError($"Not found skin with type: {data.SkinType}");
+                return;
+            }
+
+            _calculatedShipData = data;
+            _shipData = shipData;
+            name = $"{name}_{_shipData.Skin.ToString()}";
+
+            shipData.gameObject.SetActive(true);
+            Detector.SetRadius(data.VisibilityRadius);
+            SpeedMovement = data.SpeedMovement;
+
+            // Инициализация обработчика нажатий
+            _clickHandler = new ShipClickHandler(this, _calculatedShipData);
+            
+            // Инициализация здоровья
+            var minMaxHealth = Main.Instance.ShipParameters.GetParameterByType(MainShipParameters.ParameterType.Health);
+            Health = new ShipHealth(minMaxHealth.minValue, minMaxHealth.maxValue, 0, data.Armor, PercentageOfArmorAbsorption);
+            // Инициализация двигателя
+            Engine = new ShipEngine(transform, _shipData.Agent, _shipData.RadiusShip, _calculatedShipData.SpeedMovement,
+                _calculatedShipData.SpeedMovement);
+            // Инициализация оружия
+            Gun = new ShipGun(this, _shipData.GunPoints, _calculatedShipData.RateOfFire, _calculatedShipData.GunPower);
+        }
+
+        public void Clicked()
+        {
+            _clickHandler.Clicked();
+        }
+
 
 #if UNITY_EDITOR
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = new Color(1, 0, 0, 0.25f);
-            Gizmos.DrawSphere(transform.position, _radius);
-
-            Gizmos.color = Color.blue;
-            if (Engine == null || Engine.PathDebug.Length <= 0)
+            if (_shipData == null || !_isInitialized)
             {
                 return;
             }
-            var previewPoint = Engine.PathDebug[0];
-            for (var i = 0; i < Engine.PathDebug.Length - 1; i++)
+            
+            Gizmos.color = new Color(1, 0, 0, 0.25f);
+            Gizmos.DrawSphere(transform.position, _shipData.RadiusShip);
+
+            Gizmos.color = Color.blue;
+            if (Engine?.PathDebug == null || Engine.PathDebug.corners.Length <= 0)
             {
-                Gizmos.DrawLine(previewPoint, Engine.PathDebug[i + 1]);
-                previewPoint = Engine.PathDebug[i + 1];
+                return;
+            }
+
+            var previewPoint = Engine.PathDebug.corners[0];
+            for (var i = 0; i < Engine.PathDebug.corners.Length - 1; i++)
+            {
+                Gizmos.DrawLine(previewPoint, Engine.PathDebug.corners[i + 1]);
+                previewPoint = Engine.PathDebug.corners[i + 1];
             }
         }
 #endif

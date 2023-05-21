@@ -98,6 +98,15 @@ namespace FindingPath
         }
 
         /// <summary>
+        /// Проверка идет с точками на гриде
+        /// todo нужно доработать и проверить
+        /// </summary>
+        public bool CheckPointGridInPerimeter(Vector3Int a, Vector3Int b, Vector3Int pointToCheck)
+        {
+            return (pointToCheck.x - a.x) * (pointToCheck.x - b.x) <= 0 && (pointToCheck.y - a.y) * (pointToCheck.y - b.y) <= 0;
+        }
+        
+        /// <summary>
         /// Выделяем все ячейки в выбранном периметре
         /// </summary>
         public void SetValuesAroundPerimeter(Vector3 pointOne, Vector3 pointTwo, int value)
@@ -105,31 +114,9 @@ namespace FindingPath
             var pointOneLocal = GetXZ(pointOne);
             var pointTwoLocal = GetXZ(pointTwo);
 
-            int startX, endX;
-            if (pointOneLocal.x > pointTwoLocal.x)
-            {
-                startX = pointTwoLocal.x;
-                endX = pointOneLocal.x;
-            }
-            else
-            {
-                startX = pointOneLocal.x;
-                endX = pointTwoLocal.x;
-            }
+            var points = GetRightTopAndLeftBottom(pointOneLocal, pointTwoLocal);
             
-            int startZ, endZ;
-            if (pointOneLocal.z > pointTwoLocal.z)
-            {
-                startZ = pointTwoLocal.z;
-                endZ = pointOneLocal.z;
-            }
-            else
-            {
-                startZ = pointOneLocal.z;
-                endZ = pointTwoLocal.z;
-            }
-            
-            for (var x = startX; x <= endX; x++)
+            /*for (var x = startX; x <= endX; x++)
             {
                 for (var z = startZ; z <= endZ; z++)
                 {
@@ -140,7 +127,51 @@ namespace FindingPath
                     }
                     SetValue(x, z, value);
                 }
+            }*/
+            
+            for (var x = points.leftBottom.x; x <= points.rightTop.x; x++)
+            {
+                for (var z = points.leftBottom.z; z <= points.rightTop.z; z++)
+                {
+                    var currentValue = GetValue(x, z);
+                    if (currentValue != (int)MapObjectType.Empty && value != (int)MapObjectType.Empty)
+                    {
+                        continue;
+                    }
+                    SetValue(x, z, value);
+                }
             }
+        }
+
+        private (Vector3Int leftBottom, Vector3Int rightTop) GetRightTopAndLeftBottom(Vector3Int pointOne, Vector3Int pointTwo)
+        {
+            const int y = 0;
+            
+            int startX, endX;
+            if (pointOne.x > pointTwo.x)
+            {
+                startX = pointTwo.x;
+                endX = pointOne.x;
+            }
+            else
+            {
+                startX = pointOne.x;
+                endX = pointTwo.x;
+            }
+            
+            int startZ, endZ;
+            if (pointOne.z > pointTwo.z)
+            {
+                startZ = pointTwo.z;
+                endZ = pointOne.z;
+            }
+            else
+            {
+                startZ = pointOne.z;
+                endZ = pointTwo.z;
+            }
+
+            return (new Vector3Int(startX, y, startZ), new Vector3Int(endX, y, endZ));
         }
     }
 }

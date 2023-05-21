@@ -1,7 +1,5 @@
-﻿using JetBrains.Annotations;
-using SpaceObjects;
+﻿using SpaceObjects;
 using StateMachineLogic;
-using UnityEngine;
 
 namespace ShipLogic
 {
@@ -11,9 +9,25 @@ namespace ShipLogic
         StateBase Attack { get; }
         StateBase Movement { get; }
         StateBase PrepareAttack { get; }
+        bool HasEnemy { get; }
+        bool HasPointForMovement { get; }
+        bool IsNeedStop { get; }
+        string NameCurrentState { get; }
+
+        void AddFoundEnemy(IDetectedObject detectedObject);
+        void RemoveFoundEnemy(IDetectedObject detectedObject);
         
-        Vector3? PointForMovement { get; }
-        [CanBeNull] ITargetToAttack Enemy { get; } 
-        void SendDetectedObject(IDetectedObject detectedObject);
+
+        bool SeeOtherEnemyShip();
+        bool CanAttackOtherEnemyShip();
+        
+        void TurnOnEngine();
+        void TurnOffEngine();
+        void DestroyShip();
+        void MoveToSelectedPoint();
+        void TurnToEnemyShip();
+        void StartShoot();
+        void ShootInEnemy();
+        void FinishShoot();
     }
 }

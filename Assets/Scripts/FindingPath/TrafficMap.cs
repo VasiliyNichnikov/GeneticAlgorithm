@@ -93,6 +93,9 @@ namespace FindingPath
         /// </summary>
         public Vector3[] TryToFindPath(Vector3 startPosition, Vector3 endPosition, out bool isFound)
         {
+            // Очищаем все не статичные точки (Плохая идея)
+            // ClearNotStaticObjectsFromGrid();
+            
             var endGridPoint = _grid.GetXZ(endPosition);
             var endNode = Node.Create(endGridPoint);
             var reachable = new List<Node> { Node.Create(_grid.GetXZ(startPosition)) };
@@ -126,6 +129,21 @@ namespace FindingPath
             return Array.Empty<Vector3>();
         }
 
+        /*private void ConvertToGoal(Vector3Int goal)
+        {
+            foreach (var objectOnMap in _objectsOnMap)
+            {
+                if (!objectOnMap.IsStatic)
+                {
+                    continue;
+                }
+                if(_grid.CheckPointGridInPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition), goal)
+                {
+                    
+                }
+            }
+        }*/
+
         private Vector3[] BuildPath(Node node)
         {
             var path = new List<Vector3>();
@@ -135,7 +153,7 @@ namespace FindingPath
                 node = node.Preview;
             }
 
-            path.Reverse();
+            // path.Reverse();
             return path.ToArray();
         }
 
@@ -148,7 +166,6 @@ namespace FindingPath
             {
                 return reachable[0];
             }
-
             var minDistance = float.MaxValue;
             Node selectedNode = null;
 
@@ -165,14 +182,11 @@ namespace FindingPath
             return selectedNode ?? reachable[0];
         }
         
-        /// <summary>
-        /// Возвращает примыкающие точки
-        /// todo не самое лучшее решение с endGridPosition, но иначе мы не будем находить конечную точку
-        /// </summary>
+        
         private IEnumerable<Node> GetAdjacentNodes(Vector3Int point, Vector3Int endGridPosition, List<Node> explored)
         {
             var x = point.x;
-            var y = 0;
+            const int y = 0;
             var z = point.z;
 
             // Ячейки сверху

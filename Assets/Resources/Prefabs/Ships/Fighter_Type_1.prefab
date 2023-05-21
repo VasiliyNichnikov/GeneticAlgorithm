@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 6252603508847259861}
   - component: {fileID: 6262798538841856417}
   - component: {fileID: 6222589392412517345}
-  - component: {fileID: 6314381852289795142}
   - component: {fileID: 4069222552400671033}
   m_Layer: 0
   m_Name: Fighter_Type_1
@@ -100,30 +99,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: a45c7ea627ee03d49952bc9d2bf4ebda, type: 3}
---- !u!114 &6314381852289795142
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6249338943749226907}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e13ce7c39e54385b9385025177792e1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _minimumSpeed: 0
-  _maximumSpeed: 0
-  _rotationSpeed: 0
-  _weight: 0
-  _minimumAngleRotation: 0
-  _radius: 0
-  _playerType: 0
-  _rateOfFire: 0
-  _damage: 0
-  _speedProjectile: 0
-  _gunpoints: []
-  _detector: {fileID: 0}
 --- !u!54 &4069222552400671033
 Rigidbody:
   m_ObjectHideFlags: 0

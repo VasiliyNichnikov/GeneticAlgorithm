@@ -1,6 +1,8 @@
 ﻿using System;
 using FindingPath;
+using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace ShipLogic
 {
@@ -9,43 +11,49 @@ namespace ShipLogic
         void SetTarget(Vector3 target);
         float TurnToTarget(Vector3 target);
         void Move();
+
+#if UNITY_EDITOR
+        NavMeshPath PathDebug { get; }
+#endif
     }
 
     public class ShipEngine : IShipEngine
     {
         #region Speed
 
-        private readonly float _currentSpeed;
+        private readonly float _movementSpeed;
         private readonly float _rotationSpeed;
 
         #endregion
 
         private readonly IFindingPath _findingPath;
         private readonly Transform _shipTransform;
+        private readonly NavMeshAgent _agent;
+        private Vector3 _agentPosition;
         private readonly float _radiusShip;
 
         private Vector3 _target;
         private int _pathIteration;
         private Vector3 _destination;
 
-        private Vector3[] _currentPath;
-        
-        #if UNITY_EDITOR
-        public Vector3[] PathDebug = Array.Empty<Vector3>();
-        #endif
-        
+        private NavMeshPath _path = null;
+
+#if UNITY_EDITOR
+        [CanBeNull] public NavMeshPath PathDebug => _path;
+#endif
+
 
         public ShipEngine(
             Transform shipTransform,
-            IFindingPath findingPath,
+            NavMeshAgent agent,
             float radiusShip,
             float speed,
             float rotationSpeed)
         {
-            _findingPath = findingPath;
             _shipTransform = shipTransform;
+            _agent = agent;
             _radiusShip = radiusShip;
-            _currentSpeed = speed;
+            _movementSpeed = speed;
             _rotationSpeed = rotationSpeed;
         }
 
@@ -55,86 +63,92 @@ namespace ShipLogic
             {
                 return;
             }
-            
-            _pathIteration = 0;
+
+            _pathIteration = 1;
             _target = target;
-            _currentPath = CreateRoute();
-            PathDebug = _currentPath;
+            _path = new NavMeshPath();
+            _agent.CalculatePath(_target, _path);
+            _agent.isStopped = false;
         }
 
         public void Move()
         {
-            if (_currentPath.Length == 0)
+            SetAgentPosition();
+            
+            if (_path.corners.Length == 0)
             {
                 return;
             }
 
-
-            if (_pathIteration >= _currentPath.Length)
+            if (_pathIteration >= _path.corners.Length)
             {
                 _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+                _agent.isStopped = true;
                 return;
             }
 
-            _destination = _currentPath[_pathIteration];
+            _destination = _path.corners[_pathIteration];
 
             if (_destination.x < float.PositiveInfinity)
             {
-                var direction = _destination - _shipTransform.position;
+                var direction = _destination - _agentPosition;
                 direction.y = 0.0f;
+
                 var newDirection = Vector3.RotateTowards(_shipTransform.forward, direction,
                     _rotationSpeed * Time.deltaTime, 0.0f);
-
+            
+                var angleRotation = Vector3.Angle(_shipTransform.forward, direction);
+            
                 var newRotation = Quaternion.LookRotation(newDirection);
-
-                _shipTransform.rotation = Quaternion.Slerp(_shipTransform.rotation, newRotation,
+                _shipTransform.rotation = Quaternion.RotateTowards(_shipTransform.rotation, newRotation,
                     Time.deltaTime * _rotationSpeed);
-
-                var distance = Vector3.Distance(_shipTransform.position, _destination);
-                if (distance > _radiusShip)
+                
+                if (angleRotation >= 0.5f)
                 {
-                    var movement = _shipTransform.forward * Time.deltaTime * _currentSpeed;
-                    _shipTransform.Translate(movement, Space.World);
+                    return;
+                }
+                
+                var distance = Vector3.Distance(_agentPosition, _destination);
+                if (distance > _agent.radius + 0.1f)
+                {
+                    var movement = _shipTransform.forward * Time.deltaTime * _movementSpeed;
+                    _agent.Move(movement);
                 }
                 else
                 {
                     ++_pathIteration;
-                    if (_pathIteration >= _currentPath.Length)
+                    if (_pathIteration >= _path.corners.Length)
                     {
                         _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity,
                             float.PositiveInfinity);
+                        _agent.isStopped = true;
                     }
                 }
             }
         }
 
+        private void SetAgentPosition()
+        {
+            if (NavMesh.SamplePosition(_shipTransform.position, out var hit, 6.0f, NavMesh.AllAreas))
+            {
+                _agentPosition = hit.position;
+            }
+        }
+        
         public float TurnToTarget(Vector3 target)
         {
             var direction = target - _shipTransform.position;
             direction.y = 0.0f;
+            
             var newDirection =
                 Vector3.RotateTowards(_shipTransform.forward, direction, _rotationSpeed * Time.deltaTime, 0.0f);
             var newRotation = Quaternion.LookRotation(newDirection);
 
             _shipTransform.rotation =
-                Quaternion.Slerp(_shipTransform.rotation, newRotation, Time.deltaTime * _rotationSpeed);
+                Quaternion.RotateTowards(_shipTransform.rotation, newRotation, Time.deltaTime * _rotationSpeed);
 
-            return Vector3.Angle(direction, newDirection);
+            return Vector3.Angle(_shipTransform.forward, newDirection);
         }
-
-
-        /// <summary>
-        /// Составление маршрута
-        /// </summary>
-        private Vector3[] CreateRoute()
-        {
-            var path = _findingPath.TryToFindPath(_shipTransform.position, _target, out var isFound);
-            if (!isFound)
-            {
-                Debug.LogWarning("Path not found");
-                return new[] { _target };
-            }
-            return path;
-        }
+        
     }
 }

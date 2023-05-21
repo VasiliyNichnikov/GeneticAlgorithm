@@ -4,6 +4,7 @@ namespace StateMachineLogic
 {
     public abstract class StateBase
     {
+        public abstract string NameState { get; }
         protected StateMachineLogic.StateMachine Machine { get; private set; }
 
         protected StateBase(StateMachineLogic.StateMachine machine)
