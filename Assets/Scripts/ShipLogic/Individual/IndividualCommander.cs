@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using ShipLogic.Editor;
+﻿using System.Collections.Generic;
 using ShipLogic.Individual.States;
 using SpaceObjects;
 using StateMachineLogic;
 using UnityEngine;
-using Utils.Loader;
 
 namespace ShipLogic.Individual
 {
-    public class IndividualCommander : MonoBehaviour, IShipCommander, IDisposable
+    public class IndividualCommander : IShipCommander
     {
         public string NameCurrentState => _machine.CurrentState != null ? _machine.CurrentState.NameState : string.Empty;
         public StateBase Idle { get; private set; }
@@ -20,39 +17,27 @@ namespace ShipLogic.Individual
         public bool HasEnemy => _selectedEnemy != null;
         public bool HasPointForMovement => _route.IsMovement;
         public bool IsNeedStop { get; private set; }
-
-        [SerializeField] private ShipIndividual _ship;
-
-        [SerializeField] private Transform _pointForMovementTest;
         
-        [SerializeField, Header("Характеристики корабля для тестов")]
-        private ShipCharacteristics _characteristics;
-
         private readonly List<ShipBase> _foundEnemies = new List<ShipBase>();
 
+        private readonly ShipBase _ship;
         private StateMachine _machine;
         private ShipBase _selectedEnemy;
-        private ShipRoute _route;
-        
-        private void Start()
+        private readonly ShipRoute _route;
+
+        public IndividualCommander(ShipBase ship)
         {
-            Init();
-        }
-        
-        // todo в будущем сюда будем передавать основные данные корабля
-        private void Init()
-        {
+            _ship = ship;
             _route = new ShipRoute();
-            _ship.Init(this, _characteristics.ConvertToShipData());
             InitStateMachineAndStates();
 
             Main.Instance.OnUpdateGame += CustomUpdate;
+        }
 
-            if (_pointForMovementTest != null)
-            {
-                _route.AddPointForMovement(_pointForMovementTest.position);
-                _route.ChangeAndGetPointForMovement();
-            }
+        public void SetPointForMovement(Vector3 pointPosition)
+        {
+            _route.AddPointForMovement(pointPosition);
+            _route.ChangeAndGetPointForMovement();
         }
 
         public void AddFoundEnemy(IDetectedObject detectedObject)
@@ -223,26 +208,25 @@ namespace ShipLogic.Individual
             _machine.Init(Idle);
         }
 
-        private void OnDestroy()
-        {
-            Dispose();
-        }
-
-
         public void Dispose()
         {
-            Main.Instance.OnUpdateGame -= CustomUpdate;
+            if (!_ship.IsDead)
+            {
+                Main.Instance.OnUpdateGame -= CustomUpdate;
+            }
         }
 
         private void CustomUpdate()
         {
-            CheckPointForMovement();
-            CheckEnemiesForOpportunityToAttack();
-
             if (_ship.IsDead)
             {
-                _machine.ChangeState(Dead);
+                _ship.Hide();
+                Main.Instance.OnUpdateGame -= CustomUpdate;
+                return;
             }
+            
+            CheckPointForMovement();
+            CheckEnemiesForOpportunityToAttack();
             
             _machine.CurrentState.UpdateLogic();
         }

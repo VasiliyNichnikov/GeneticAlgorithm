@@ -6,13 +6,26 @@ namespace UI.Dialog
     public class DialogManager
     {
         private readonly RectTransform _parentForDialogs;
+        private readonly RectTransform _parentForLocationUI;
         private readonly DialogPool _pool = new DialogPool();
 
-        public DialogManager(RectTransform canvas)
+        public DialogManager(RectTransform parentForDialogs, RectTransform parentForLocationUI)
         {
-            _parentForDialogs = canvas;
+            _parentForDialogs = parentForDialogs;
+            _parentForLocationUI = parentForLocationUI;
         }
 
+
+        /// <summary>
+        /// Возвращает новый UI от камеры
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetNewLocationDialog<T>() where T: DialogBase
+        {
+            return _pool.GetOrCreateDialog<T>(_parentForLocationUI);
+        }
+        
         /// <summary>
         /// Возвращает полностью новый диалог, даже если такой же есть уже открытый
         /// </summary>

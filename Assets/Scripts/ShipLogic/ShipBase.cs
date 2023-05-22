@@ -10,11 +10,10 @@ namespace ShipLogic
     public abstract class ShipBase : MonoBehaviour, IObjectToClick, ITargetToAttack, IDisposable
     {
         public DetectedObjectType ObjectType => DetectedObjectType.Ship;
-        public PlayerType PlayerType => _playerType;
         public Vector3 Position => transform.position;
         public float ShipRadius => _shipData.RadiusShip;
         protected float SpeedMovement { get; private set; }
-
+        public PlayerType PlayerType { get; private set; }
         public bool IsDead => Health.IsDead;
 
         public IShipHealth Health { get; private set; }
@@ -22,13 +21,9 @@ namespace ShipLogic
         public abstract IShipGun Gun { get; protected set; }
 
         [SerializeField] protected ShipDetector Detector;
-        
-        // todo будет задаваться при создание корабля
-        [SerializeField] private PlayerType _playerType;
-        
-        
+
         [SerializeField] private ShipSkinData[] _skins;
-        
+
         public ShipData CalculatedShipData => _calculatedShipData;
         public string NameCurrentState => _commander.NameCurrentState;
 
@@ -37,6 +32,7 @@ namespace ShipLogic
         private bool _isInitialized;
         private ShipData _calculatedShipData;
         private ShipClickHandler _clickHandler;
+        private Action _addShipInCache;
 
         /// <summary>
         /// Процент поглащения урона броней
@@ -57,26 +53,68 @@ namespace ShipLogic
             }
         }
 
-
-        public virtual void Init(IShipCommander commander, ShipData data)
+        public void Init(IBuilderShip builder)
         {
-            InitSkin(data);
-            _commander = commander;
-            Detector.Init(_playerType, commander);
+            if (_isInitialized)
+            {
+                Debug.LogError("Ship is already initialized");
+                return;
+            }
+
+            InitSkin(builder.Data);
+            _commander = builder.Commander;
+
             _isInitialized = true;
+            PlayerType = builder.PlayerType;
+            Detector.Init(builder.PlayerType, _commander);
+        }
+
+        public void InitCache(Action addShipInCache)
+        {
+            _addShipInCache = addShipInCache;
         }
 
         public abstract bool SeeOtherShip(ITargetToAttack ship);
 
         public abstract bool CanAttackOtherShip(ITargetToAttack ship);
-        
+
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public IShipCommander GetCommander()
+        {
+            if (_commander == null)
+            {
+                Debug.LogError("Commander is null");
+                return null;
+            }
+            
+            return _commander;
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
+            _isInitialized = false;
+            _addShipInCache?.Invoke();
+            _shipData.gameObject.SetActive(false);
+            TurnOffEngine();
+            Gun.FinishShoot();
+            // При уничтожение корабля теряем командира
+            _commander.Dispose();
+            _commander = null;
+        }
+
         public void TurnOffEngine()
         {
             if (!_isInitialized)
             {
                 return;
             }
-
+            
+            _shipData.Agent.enabled = false;
             _shipData.EffectsManager.TurnOffEngine();
         }
 
@@ -87,6 +125,8 @@ namespace ShipLogic
                 return;
             }
 
+            
+            _shipData.Agent.enabled = true;
             _shipData.EffectsManager.TurnOnEngine();
         }
 
@@ -99,7 +139,7 @@ namespace ShipLogic
 
             _shipData.EffectsManager.DestroyShip();
         }
-        
+
         public void OnDestroy()
         {
             Dispose();
@@ -132,10 +172,11 @@ namespace ShipLogic
 
             // Инициализация обработчика нажатий
             _clickHandler = new ShipClickHandler(this, _calculatedShipData);
-            
+
             // Инициализация здоровья
             var minMaxHealth = Main.Instance.ShipParameters.GetParameterByType(MainShipParameters.ParameterType.Health);
-            Health = new ShipHealth(minMaxHealth.minValue, minMaxHealth.maxValue, 0, data.Armor, PercentageOfArmorAbsorption);
+            Health = new ShipHealth(minMaxHealth.minValue, minMaxHealth.maxValue, 0, data.Armor,
+                PercentageOfArmorAbsorption);
             // Инициализация двигателя
             Engine = new ShipEngine(transform, _shipData.Agent, _shipData.RadiusShip, _calculatedShipData.SpeedMovement,
                 _calculatedShipData.SpeedMovement);
@@ -157,7 +198,7 @@ namespace ShipLogic
             {
                 return;
             }
-            
+
             Gizmos.color = new Color(1, 0, 0, 0.25f);
             Gizmos.DrawSphere(transform.position, _shipData.RadiusShip);
 

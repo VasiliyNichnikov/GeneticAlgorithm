@@ -1,9 +1,11 @@
-﻿using SpaceObjects;
+﻿using System;
+using SpaceObjects;
 using StateMachineLogic;
+using UnityEngine;
 
 namespace ShipLogic
 {
-    public interface IShipCommander
+    public interface IShipCommander : IDisposable
     {
         StateBase Idle { get; }
         StateBase Attack { get; }
@@ -14,10 +16,11 @@ namespace ShipLogic
         bool IsNeedStop { get; }
         string NameCurrentState { get; }
 
+        void SetPointForMovement(Vector3 pointPosition);
+        
         void AddFoundEnemy(IDetectedObject detectedObject);
         void RemoveFoundEnemy(IDetectedObject detectedObject);
         
-
         bool SeeOtherEnemyShip();
         bool CanAttackOtherEnemyShip();
         

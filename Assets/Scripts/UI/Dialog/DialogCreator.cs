@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using UI.Dialog.InfoAboutMiningPlanet;
+using UI.Dialog.InfoAboutPlayerPlanet;
 using UI.Dialog.InfoAboutShip;
 using UnityEngine;
 using Utils.Loader;
@@ -13,7 +15,9 @@ namespace UI.Dialog
     {
         private static readonly Dictionary<Type, string> _dialogPaths = new Dictionary<Type, string>
         {
-            { typeof(InfoAboutShipDialog), "Prefabs/UI/InfoAboutShip/InfoAboutShipDialog" }
+            { typeof(InfoAboutShipDialog), "Prefabs/UI/InfoAboutShip/InfoAboutShipDialog" },
+            {typeof(InfoAboutMiningPlanetDialog), "Prefabs/UI/InfoAboutMiningPlanet/InfoAboutMiningPlanetDialog"},
+            {typeof(InfoAboutPlayerPlanetDialog), "Prefabs/UI/InfoAboutPlayerPlanet/InfoAboutPlayerPlanetDialog"}
         };
 
         [CanBeNull]
