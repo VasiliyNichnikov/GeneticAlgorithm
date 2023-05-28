@@ -14,6 +14,7 @@ namespace FindingPath
         [SerializeField] private Vector3 _originPosition;
         [SerializeField] private Transform _parentForText;
         [SerializeField] private HeatMapVisual _heatMapVisual;
+        [SerializeField] private bool _isShowDebugMap;
 
         // Двигаем не статичные корабли
         public event Action OnMoveNonStaticObjects;
@@ -24,6 +25,12 @@ namespace FindingPath
         
         public static TrafficMap Map { get; private set; }
 
+
+        private void Awake()
+        {
+            Map = this;
+            Init();
+        }
 
         private void Update()
         {
@@ -39,20 +46,17 @@ namespace FindingPath
             // Отрисовываем заново все движущиеся объекты
             DrawNotStaticObjectOnGrid();
         }
-        
-
-        private void Awake()
-        {
-            Map = this;
-            Init();
-        }
 
         private void Init()
         {
-            _grid = new Grid(_weight, _length, _cellSize, _originPosition, _parentForText);
-            _heatMapVisual.SetGrid(_grid);
-            
-            _grid.OnChangeCellValue += UpdateHeatMapVisual;
+            _grid = new Grid(_weight, _length, _cellSize, _originPosition, _parentForText, _isShowDebugMap);
+            _heatMapVisual.gameObject.SetActive(_isShowDebugMap);
+
+            if (_isShowDebugMap)
+            {
+                _heatMapVisual.SetGrid(_grid);
+                _grid.OnChangeCellValue += UpdateHeatMapVisual;
+            }
         }
 
         private void UpdateHeatMapVisual((int x, int z) positionGrid)
@@ -262,9 +266,17 @@ namespace FindingPath
                 .Where(node => !explored.Contains(node));
         }
 
+        private void OnDestroy()
+        {
+            Dispose();
+        }
+
         public void Dispose()
         {
-            _grid.OnChangeCellValue -= UpdateHeatMapVisual;
+            if (_isShowDebugMap)
+            {
+                _grid.OnChangeCellValue -= UpdateHeatMapVisual;
+            }
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Planets.PlayerPlanet
         [SerializeField] private Transform _startingPoint;
         [SerializeField] private InfoAboutPlayerPlanetDialog _playerPlanetDialog;
         [SerializeField] private PerimeterOfObject _perimeter;
+        [SerializeField] private MeshRenderer _renderer;
         
         private IPlayerBrain _brain;
 
@@ -30,6 +31,7 @@ namespace Planets.PlayerPlanet
             _brain = brain;
             _playerPlanetDialog = Main.Instance.DialogManager.GetNewLocationDialog<InfoAboutPlayerPlanetDialog>();
             _playerPlanetDialog.Init(this, transform);
+            InitMaterial();
         }
 
         public void CreateRandomShipDebug()
@@ -38,6 +40,12 @@ namespace Planets.PlayerPlanet
             var ship = Main.Instance.ShipManager.AddShipOnMap(_type, randomCharacteristics.ConvertToShipData());
             ship.transform.position = _startingPoint.position;
             ship.GetCommander().SetPointForMovement(_brain.GetPointForMovement());
+        }
+
+        private void InitMaterial()
+        {
+            var material = Main.Instance.MaterialStorage.GetMaterialForPlanet(_type);
+            _renderer.material = material;
         }
     }
 }

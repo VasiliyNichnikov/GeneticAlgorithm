@@ -8,9 +8,6 @@ namespace Players
     {
         [SerializeField] private PlayerPlanet _planet;
         [SerializeField] private MiningPlanet _miningPlanets;
-        
-        
-
 
         private void Start()
         {

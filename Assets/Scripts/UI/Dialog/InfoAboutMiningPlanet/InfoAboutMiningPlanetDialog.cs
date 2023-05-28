@@ -55,9 +55,11 @@ namespace UI.Dialog.InfoAboutMiningPlanet
                     break;
                 case PlayerType.Player1:
                     _capturingPoint.SetPlayerName("Player One");
+                    _capturingPoint.SetColorSlider(Main.Instance.ColorStorage.GetColorForPlayer(PlayerType.Player1));
                     break;
                 case PlayerType.Player2:
                     _capturingPoint.SetPlayerName("Player Two");
+                    _capturingPoint.SetColorSlider(Main.Instance.ColorStorage.GetColorForPlayer(PlayerType.Player2));
                     break;
             }
         }

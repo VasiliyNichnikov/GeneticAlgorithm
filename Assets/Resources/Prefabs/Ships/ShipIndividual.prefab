@@ -153,6 +153,7 @@ MonoBehaviour:
   _radiusShip: 12
   _skinType: 0
   _effectsManager: {fileID: 5464339253614419369}
+  _renderer: {fileID: 5532783817372272501}
 --- !u!114 &5464339253614419369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -529,6 +530,7 @@ MonoBehaviour:
   _radiusShip: 10
   _skinType: 1
   _effectsManager: {fileID: 279079074377681872}
+  _renderer: {fileID: 8844373430140967998}
 --- !u!114 &279079074377681872
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -957,6 +959,7 @@ MonoBehaviour:
   _radiusShip: 12
   _skinType: 2
   _effectsManager: {fileID: 1502012928262188171}
+  _renderer: {fileID: 2099346802311305646}
 --- !u!64 &4689922363236040311
 MeshCollider:
   m_ObjectHideFlags: 0

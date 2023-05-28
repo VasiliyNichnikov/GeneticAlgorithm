@@ -16,10 +16,11 @@ namespace FindingPath
         private readonly Vector3 _originPosition;
         private readonly int[,] _gridArray;
         private readonly TextMesh[,] _debugTextArray;
+        private readonly bool _isDebugMode;
 
         public event Action<(int x, int z)> OnChangeCellValue; 
 
-        public Grid(int width, int length, float cellSize, Vector3 originPosition, Transform parent=null)
+        public Grid(int width, int length, float cellSize, Vector3 originPosition, Transform parent=null, bool isDebug=false)
         {
             _width = width;
             _cellSize = cellSize;
@@ -28,23 +29,27 @@ namespace FindingPath
 
             _gridArray = new int[_width, _length];
             _debugTextArray = new TextMesh[_width, _length];
+            _isDebugMode = isDebug;
             
-            for (var x = 0; x < _gridArray.GetLength(0); x++)
+            if (isDebug)
             {
-                for (var z = 0; z < _gridArray.GetLength(1); z++)
+                for (var x = 0; x < _gridArray.GetLength(0); x++)
                 {
-                    var textPosition = GetWorldPosition(x, z) + new Vector3(_cellSize, 0, _cellSize) * 0.5f;
-                    _debugTextArray[x, z] = TextMeshUtils.CreateWorldText(_gridArray[x, z].ToString(),
-                        parent, 
-                        textPosition,
-                        20, Color.
-                            white);
-                    Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x, z + 1), Color.white, 100f);
-                    Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x + 1, z), Color.white, 100f);
+                    for (var z = 0; z < _gridArray.GetLength(1); z++)
+                    {
+                        var textPosition = GetWorldPosition(x, z) + new Vector3(_cellSize, 0, _cellSize) * 0.5f;
+                        _debugTextArray[x, z] = TextMeshUtils.CreateWorldText(_gridArray[x, z].ToString(),
+                            parent, 
+                            textPosition,
+                            20, Color.
+                                white);
+                        Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x, z + 1), Color.white, 100f);
+                        Debug.DrawLine(GetWorldPosition(x, z), GetWorldPosition(x + 1, z), Color.white, 100f);
+                    }
                 }
+                Debug.DrawLine(GetWorldPosition(0, _length), GetWorldPosition(_width, _length), Color.white, 100f);
+                Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _length), Color.white, 100f);
             }
-            Debug.DrawLine(GetWorldPosition(0, _length), GetWorldPosition(_width, _length), Color.white, 100f);
-            Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _length), Color.white, 100f);
         }
 
         public int GetWidth()
@@ -95,7 +100,10 @@ namespace FindingPath
             if (x >= 0 && z >= 0 && x < _width && z < _length)
             {
                 _gridArray[x, z] = Mathf.Clamp(value, HeatMapMinValue, HeatMapMaxValue);
-                _debugTextArray[x, z].text = value.ToString();
+                if (_isDebugMode)
+                {
+                    _debugTextArray[x, z].text = value.ToString();
+                }
                 OnChangeCellValue?.Invoke((x, z));
             }
         }

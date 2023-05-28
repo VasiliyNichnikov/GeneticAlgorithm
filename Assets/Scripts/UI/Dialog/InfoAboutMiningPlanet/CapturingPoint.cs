@@ -9,6 +9,7 @@ namespace UI.Dialog.InfoAboutMiningPlanet
         [SerializeField] private Text _playerName;
         [SerializeField] private Text _timeLeft;
         [SerializeField] private Slider _capturePercentage;
+        [SerializeField] private Image _fillImage;
 
         private void Start()
         {
@@ -31,7 +32,13 @@ namespace UI.Dialog.InfoAboutMiningPlanet
 
             var timeLeftValue = Mathf.RoundToInt(Converter.ConvertFromOneRangeToAnother(0, 1, 0, maxValue, value));
             _capturePercentage.value = value;
+            
             _timeLeft.text = $"{timeLeftValue}/{maxValue}";
+        }
+
+        public void SetColorSlider(Color color)
+        {
+            _fillImage.color = color;
         }
 
         public void ResetName()

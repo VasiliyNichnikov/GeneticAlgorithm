@@ -1,6 +1,7 @@
 ﻿using System;
 using Factories;
 using ShipLogic;
+using Storages;
 using UI.Dialog;
 using UI.Dialog.GameController;
 using UnityEngine;
@@ -16,12 +17,16 @@ public class Main : MonoBehaviour
     public MainShipParameters ShipParameters => _shipParameters;
     public FactoryShip FactoryShip => _factoryShip;
     public Canvas LocationCanvas => _locationCanvas;
-    
+    public MaterialStorage MaterialStorage => _materialStorage;
+    public ColorStorage ColorStorage => _colorStorage;
+
     [SerializeField] private MainShipParameters _shipParameters;
     [SerializeField] private RectTransform _parentForDialogs;
     [SerializeField] private RectTransform _parentForLocationUI;
     [SerializeField] private Canvas _locationCanvas;
     [SerializeField] private FactoryShip _factoryShip;
+    [SerializeField] private MaterialStorage _materialStorage;
+    [SerializeField] private ColorStorage _colorStorage;
 
     private DialogManager _dialogManager;
     private GameControllerManager _gameManager;

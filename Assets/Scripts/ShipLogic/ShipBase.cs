@@ -77,6 +77,9 @@ namespace ShipLogic
             PlayerType = builder.PlayerType;
             Detector.Init(builder.PlayerType, _commander);
             _shipData.EffectsManager.Init();
+            
+            // Инициализация цвета
+            _shipData.SetMaterial(Main.Instance.MaterialStorage.GetMaterialForShip(PlayerType));
         }
 
         public void InitCache(Action addShipInCache)

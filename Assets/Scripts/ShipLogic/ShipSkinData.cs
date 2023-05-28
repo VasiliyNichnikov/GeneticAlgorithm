@@ -24,6 +24,12 @@ namespace ShipLogic
         [SerializeField] private float _radiusShip;
         [SerializeField] private SkinType _skinType;
         [SerializeField] private ShipEffectsManager _effectsManager;
+        [SerializeField] private MeshRenderer _renderer;
+        
+        public void SetMaterial(Material material)
+        {
+            _renderer.material = material;
+        }
 
     }
 }
