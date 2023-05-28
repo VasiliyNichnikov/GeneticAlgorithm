@@ -1,10 +1,11 @@
-﻿using Players;
+﻿using System;
+using Players;
 using Pool;
 using ShipLogic.Individual;
 
 namespace ShipLogic
 {
-    public class ShipManager
+    public class ShipManager : IDisposable
     {
         private class BuilderShip : IBuilderShip
         {
@@ -29,10 +30,16 @@ namespace ShipLogic
                 return new BuilderShip(PlayerType.Player2, commander, data);
             }
         }
-        
+
+        public event Action<ShipBase> OnDestroyShip;
         
         private readonly ShipPool _pool = new ShipPool();
 
+        public ShipManager()
+        {
+            _pool.OnHideShip += CallOnDestroyShip;
+        }
+        
         public ShipBase AddShipOnMap(PlayerType type, ShipData data)
         {
             return type == PlayerType.Player1 ? AddShipOnMapPlayer1(data) : AddShipOnMapPlayer2(data);
@@ -59,6 +66,16 @@ namespace ShipLogic
             var ship = _pool.GetOrCreateShip();
             var commander = new IndividualCommander(ship);
             return (ship, commander);
+        }
+
+        private void CallOnDestroyShip(ShipBase ship)
+        {
+            OnDestroyShip?.Invoke(ship);
+        }
+
+        public void Dispose()
+        {
+            _pool.OnHideShip -= CallOnDestroyShip;
         }
     }
 }

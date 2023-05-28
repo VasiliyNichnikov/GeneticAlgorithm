@@ -32,7 +32,7 @@ namespace Planets.MiningPlayer
             {
                 return;
             }
-
+            
             _miningPlanet.RemoveFoundShip(detectedObject);
         }
     }

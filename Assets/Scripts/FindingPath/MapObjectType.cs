@@ -3,7 +3,7 @@
     public enum MapObjectType
     {
         Empty = 0,
-        Ship = 1,
-        Planet = 2,
+        Ship = 50,
+        Planet = 80,
     }
 }

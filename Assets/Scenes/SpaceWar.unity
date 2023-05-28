@@ -155,6 +155,7 @@ Transform:
   - {fileID: 1928331501}
   - {fileID: 984967024}
   - {fileID: 1512277795}
+  - {fileID: 708963832}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -524,6 +525,57 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &708963831
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 708963832}
+  - component: {fileID: 708963833}
+  m_Layer: 0
+  m_Name: TrafficMap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &708963832
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 708963831}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1943012214}
+  m_Father: {fileID: 63153193}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &708963833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 708963831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a051684f6c2b4d59b2dccb897661fc17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _weight: 20
+  _length: 20
+  _cellSize: 17
+  _originPosition: {x: -180, y: 0, z: -180}
+  _parentForText: {fileID: 708963832}
+  _heatMapVisual: {fileID: 1943012217}
 --- !u!1 &729015103
 GameObject:
   m_ObjectHideFlags: 0
@@ -735,6 +787,10 @@ PrefabInstance:
       value: 690
       objectReference: {fileID: 0}
     - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
+      propertyPath: _miningPlanets
+      value: 
+      objectReference: {fileID: 4767479931421864}
+    - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: _testPointForMovement
       value: 
       objectReference: {fileID: 1054899555}
@@ -748,7 +804,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -756,7 +812,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 120
+      value: 112
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1180,6 +1236,103 @@ MonoBehaviour:
   - _type: 5
     _minValue: 0
     _maxValue: 100
+--- !u!1 &1943012213
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1943012214}
+  - component: {fileID: 1943012217}
+  - component: {fileID: 1943012216}
+  - component: {fileID: 1943012215}
+  m_Layer: 0
+  m_Name: HeatMapVisual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1943012214
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1943012213}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 708963832}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1943012215
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1943012213}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 1323b19f37a453a4a9936361b9a0ef2f, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1943012216
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1943012213}
+  m_Mesh: {fileID: 0}
+--- !u!114 &1943012217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1943012213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0fe28e82b9f4a28aef03556074d6ea1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _meshFilter: {fileID: 1943012216}
 --- !u!1001 &2037264435
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1213,7 +1366,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4975699229939420, guid: 15a9572a8eb579041a9dbe9f15f6d02e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 4975699229939420, guid: 15a9572a8eb579041a9dbe9f15f6d02e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1385,6 +1538,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8031169872342316677, guid: 20aec272522d33142b96a73ba599b867, type: 3}
   m_PrefabInstance: {fileID: 8026713668018319907}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4767479931421864 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2627675386981143039, guid: 20aec272522d33142b96a73ba599b867, type: 3}
+  m_PrefabInstance: {fileID: 8026713668018319907}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e78282fa5f241ef8f1e2d6607fe299d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4509605630924612660
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1397,6 +1561,10 @@ PrefabInstance:
       value: PlanetPlayer
       objectReference: {fileID: 0}
     - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
+      propertyPath: _miningPlanets
+      value: 
+      objectReference: {fileID: 4767479931421864}
+    - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: _testPointForMovement
       value: 
       objectReference: {fileID: 1054899555}
@@ -1406,7 +1574,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1414,7 +1582,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -120
+      value: -112
       objectReference: {fileID: 0}
     - target: {fileID: 4511222414152582619, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1456,6 +1624,10 @@ PrefabInstance:
     - target: {fileID: 8025668434184062625, guid: 20aec272522d33142b96a73ba599b867, type: 3}
       propertyPath: m_Name
       value: PlanetMining_Down
+      objectReference: {fileID: 0}
+    - target: {fileID: 8025668434184062625, guid: 20aec272522d33142b96a73ba599b867, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8031169872342316677, guid: 20aec272522d33142b96a73ba599b867, type: 3}
       propertyPath: m_RootOrder

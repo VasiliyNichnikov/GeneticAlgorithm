@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8011926769051649907}
   - component: {fileID: 990088502018853403}
   - component: {fileID: 2627675386981143039}
+  - component: {fileID: 4256914568620345458}
   m_Layer: 0
   m_Name: PlanetMining
   m_TagString: Untagged
@@ -116,6 +117,20 @@ MonoBehaviour:
   _captureTime: 10
   _detector: {fileID: 458908734068539824}
   _miningPlanetDialog: {fileID: 7876659499414603152, guid: 0968100170702954682852da0658b03f, type: 3}
+  _perimeter: {fileID: 4256914568620345458}
+--- !u!114 &4256914568620345458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8025668434184062625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06e33e17963b4d99a6258c8e8d83af33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _collider: {fileID: 990088502018853403}
 --- !u!1 &8026713668513305593
 GameObject:
   m_ObjectHideFlags: 0

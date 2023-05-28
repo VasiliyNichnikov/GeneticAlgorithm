@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Utils;
 
@@ -7,12 +7,17 @@ namespace FindingPath
 {
     public class Grid
     {
+        public const int HeatMapMaxValue = 100;
+        public const int HeatMapMinValue = 0;
+        
         private readonly int _width;
         private readonly int _length;
         private readonly float _cellSize;
         private readonly Vector3 _originPosition;
         private readonly int[,] _gridArray;
         private readonly TextMesh[,] _debugTextArray;
+
+        public event Action<(int x, int z)> OnChangeCellValue; 
 
         public Grid(int width, int length, float cellSize, Vector3 originPosition, Transform parent=null)
         {
@@ -40,13 +45,32 @@ namespace FindingPath
             }
             Debug.DrawLine(GetWorldPosition(0, _length), GetWorldPosition(_width, _length), Color.white, 100f);
             Debug.DrawLine(GetWorldPosition(_width, 0), GetWorldPosition(_width, _length), Color.white, 100f);
-
-            SetValue(4, 5, 14);
         }
 
-        private Vector3 GetWorldPosition(int x, int z)
+        public int GetWidth()
+        {
+            return _width;
+        }
+
+        public int GetLength()
+        {
+            return _length;
+        }
+
+        public float GetCellSize()
+        {
+            return _cellSize;
+        }
+        
+        public Vector3 GetWorldPosition(int x, int z)
         {
             return new Vector3(x, 0, z) * _cellSize + _originPosition;
+        }
+
+        public Vector3 GetWorldPositionCenterCell(Vector3Int gridPosition)
+        {
+            var cellWorldPosition = GetWorldPosition(gridPosition);
+            return cellWorldPosition + new Vector3(1, 0, 1) * _cellSize * 0.5f;
         }
 
         public Vector3 GetWorldPosition(Vector3Int gridPosition)
@@ -70,8 +94,9 @@ namespace FindingPath
         {
             if (x >= 0 && z >= 0 && x < _width && z < _length)
             {
-                _gridArray[x, z] = value;
+                _gridArray[x, z] = Mathf.Clamp(value, HeatMapMinValue, HeatMapMaxValue);
                 _debugTextArray[x, z].text = value.ToString();
+                OnChangeCellValue?.Invoke((x, z));
             }
         }
 
@@ -97,15 +122,74 @@ namespace FindingPath
             return GetValue(x, z);
         }
 
-        /// <summary>
-        /// Проверка идет с точками на гриде
-        /// todo нужно доработать и проверить
-        /// </summary>
-        public bool CheckPointGridInPerimeter(Vector3Int a, Vector3Int b, Vector3Int pointToCheck)
+        public Vector3[] GetEmptyPointsAroundSelectedObject(Vector3 worldPosition, int emptyValue, int range)
         {
-            return (pointToCheck.x - a.x) * (pointToCheck.x - b.x) <= 0 && (pointToCheck.y - a.y) * (pointToCheck.y - b.y) <= 0;
+            void CheckAndAddPointOnList(int x, int z, List<Vector3> points)
+            {
+                var value = GetValue(x, z);
+                if (value == emptyValue)
+                {
+                    var pointWorldPosition = GetWorldPositionCenterCell(new Vector3Int(x, 0, z));
+                    points.Add(pointWorldPosition);
+                }
+            }
+            var result = new List<Vector3>();
+            
+            GetXZ(worldPosition, out var originX, out var originZ);
+            for (var x = 0; x < range; x++)
+            {
+                for (var z = 0; z < range - x; z++)
+                {
+                    CheckAndAddPointOnList(originX + x, originZ + z, result);
+                    if (x != 0)
+                    {
+                        CheckAndAddPointOnList(originX - x, originZ + z, result);
+                    }
+
+                    if (z != 0)
+                    {
+                        CheckAndAddPointOnList(originX + x, originZ - z, result);
+                        if (x != 0)
+                        {
+                            CheckAndAddPointOnList(originX - x, originZ - z, result);
+                        }
+                    }
+                }
+            }
+
+            return result.ToArray();
         }
         
+        public void AddValue(Vector3 worldPosition, int value, int range)
+        {
+            GetXZ(worldPosition, out var originX, out var originZ);
+            for (var x = 0; x < range; x++)
+            {
+                for (var z = 0; z < range - x; z++)
+                {
+                    AddValue(originX + x, originZ + z, value);
+                    if (x != 0)
+                    {
+                        AddValue(originX - x, originZ + z, value);
+                    }
+
+                    if (z != 0)
+                    {
+                        AddValue(originX + x, originZ - z, value);
+                        if (x != 0)
+                        {
+                            AddValue(originX - x, originZ - z, value);
+                        }
+                    }
+                }
+            }
+        }
+        
+        private void AddValue(int x, int z, int value)
+        {
+            SetValue(x, z, GetValue(x, z) + value);
+        }
+
         /// <summary>
         /// Выделяем все ячейки в выбранном периметре
         /// </summary>
@@ -115,20 +199,7 @@ namespace FindingPath
             var pointTwoLocal = GetXZ(pointTwo);
 
             var points = GetRightTopAndLeftBottom(pointOneLocal, pointTwoLocal);
-            
-            /*for (var x = startX; x <= endX; x++)
-            {
-                for (var z = startZ; z <= endZ; z++)
-                {
-                    var currentValue = GetValue(x, z);
-                    if (currentValue != (int)MapObjectType.Empty && value != (int)MapObjectType.Empty)
-                    {
-                        continue;
-                    }
-                    SetValue(x, z, value);
-                }
-            }*/
-            
+
             for (var x = points.leftBottom.x; x <= points.rightTop.x; x++)
             {
                 for (var z = points.leftBottom.z; z <= points.rightTop.z; z++)

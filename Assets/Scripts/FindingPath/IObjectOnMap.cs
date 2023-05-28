@@ -11,6 +11,7 @@ namespace FindingPath
         
         bool IsStatic { get; }
         
+        Vector3 WorldPosition { get; }
         Vector3 LeftBottomPosition { get; }
         Vector3 RightTopPosition { get; }
     }

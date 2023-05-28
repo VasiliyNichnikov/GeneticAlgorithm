@@ -17,13 +17,13 @@ namespace ShipLogic
         string NameCurrentState { get; }
 
         void SetPointForMovement(Vector3 pointPosition);
-        
+
         void AddFoundEnemy(IDetectedObject detectedObject);
         void RemoveFoundEnemy(IDetectedObject detectedObject);
-        
+
         bool SeeOtherEnemyShip();
         bool CanAttackOtherEnemyShip();
-        
+
         void TurnOnEngine();
         void TurnOffEngine();
         void DestroyShip();
@@ -32,5 +32,9 @@ namespace ShipLogic
         void StartShoot();
         void ShootInEnemy();
         void FinishShoot();
+
+#if UNITY_EDITOR
+        Vector3 GetPointForMovement();
+#endif
     }
 }

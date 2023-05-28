@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using FindingPath;
 using Players;
 using SpaceObjects;
 using UI.Dialog.InfoAboutMiningPlanet;
@@ -10,6 +12,24 @@ namespace Planets.MiningPlayer
 {
     public class MiningPlanet : MonoBehaviour, IMiningPlanet
     {
+        public Vector3 GetPointToApproximate()
+        {
+            var emptyPoint = TrafficMap.Map.TryGetRandomEmptyPointAroundObject(this, 5, out var isFound);
+            if (!isFound)
+            {
+                Debug.LogWarning("Not found empty point around object");
+                return Vector3.zero;
+            }
+
+            return emptyPoint;
+        }
+        
+        public MapObjectType TypeObject => MapObjectType.Planet;
+        public bool IsStatic => true;
+        public Vector3 WorldPosition => transform.position;
+        public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
+        public Vector3 RightTopPosition => _perimeter.RightTopPoint;
+        
         public event Action<float> OnUpdateRemainingTime;
         public event Action<PlayerType> OnUpdatePlayerType;
         public float CaptureTime => _captureTime;
@@ -20,6 +40,7 @@ namespace Planets.MiningPlayer
 
         [SerializeField] private PlanetDetector _detector;
         [SerializeField] private InfoAboutMiningPlanetDialog _miningPlanetDialog;
+        [SerializeField] private PerimeterOfObject _perimeter;
 
         private CapturingPlanet _capturingPlanet;
 
@@ -32,11 +53,14 @@ namespace Planets.MiningPlayer
 
         private void Init()
         {
+            TrafficMap.Map.AddObjectOnMap(this);
+            
             _detector.Init(this);
             _capturingPlanet = new CapturingPlanet(_captureTime);
             _miningPlanetDialog = Main.Instance.DialogManager.GetNewLocationDialog<InfoAboutMiningPlanetDialog>();
             _miningPlanetDialog.Init(this, transform);
             Main.Instance.OnUpdateGame += CustomUpdate;
+            Main.Instance.ShipManager.OnDestroyShip += RemoveFoundShip;
         }
         public void AddFoundShip(IDetectedObject detectedObject)
         {
@@ -45,89 +69,93 @@ namespace Planets.MiningPlayer
                 Debug.LogWarning("Detected object is already contains in list");
                 return;
             }
-
-            // todo
-            // Проблема, что мы не проверяем уничтожился корабль или нет
+            
             _detectedObjects.Add(detectedObject);
-            CheckOutPlanetCapture(detectedObject);
+            CheckOutPlanetForTwoPlayers();
         }
 
         public void RemoveFoundShip(IDetectedObject detectedObject)
         {
             if (!_detectedObjects.Contains(detectedObject))
             {
-                Debug.LogWarning("Detected objects is not contains in list");
                 return;
             }
-
-            // todo
+            
             // Проблема, что мы не проверяем уничтожился корабль или нет
             _detectedObjects.Remove(detectedObject);
-            CheckOutPlanetCapture(detectedObject);
+            CheckOutPlanetForTwoPlayers();
         }
 
-        // Проверяем захват планеты
-        private void CheckOutPlanetCapture(IDetectedObject detectedObject)
+        private void CheckOutPlanetForTwoPlayers()
         {
-            var hasEnemy = IsThereEnemy();
-            var hasPlayers = AreThereAnyPlayers();
+            CheckOutPlanetCapture(PlayerType.Player1);
+            CheckOutPlanetCapture(PlayerType.Player2);
+        }
+        
+        // Проверяем захват планеты
+        private void CheckOutPlanetCapture(PlayerType player)
+        {
+            var hasEnemy = IsThereEnemy(player);
+            var hasAllies = AreThereAnyAllies();
             
             var currentState = _capturingPlanet.CurrentState;
             switch (currentState)
             {
                 case CapturingPlanet.CapturingStates.NotCaptured:
-                    if (!hasEnemy && hasPlayers)
+                    if (!hasEnemy && hasAllies)
                     {
-                        _capturingPlanet.StartCapturing(detectedObject.PlayerType);
+                        _capturingPlanet.StartCapturing(player);
                     }
                     break;
                 case CapturingPlanet.CapturingStates.InProcessOfCapture:
-                    if (hasEnemy && hasPlayers)
+                    if (hasEnemy && hasAllies && _capturingPlanet.ExcitingPlayer == player)
                     {
                         _capturingPlanet.PauseCapturing();
                     }
-                    else if(!hasPlayers)
+                    else if(!hasEnemy && hasAllies && _capturingPlanet.ExcitingPlayer != player)
                     {
                         _capturingPlanet.ResetCapture();
+                        _capturingPlanet.StartCapturing(player);
                     }
                     break;
                 case CapturingPlanet.CapturingStates.OnPause:
-                    if (!hasEnemy && hasPlayers)
+                    if (!hasEnemy && hasAllies && _capturingPlanet.ExcitingPlayer == player)
                     {
                         _capturingPlanet.ContinueCapturing();
                     }
-                    else if(!hasPlayers)
+                    else if(!hasEnemy && hasAllies && _capturingPlanet.ExcitingPlayer != player)
                     {
                         _capturingPlanet.ResetCapture();
+                        _capturingPlanet.StartCapturing(player);
                     }
                     break;
                 case CapturingPlanet.CapturingStates.Captured:
+                    if (_capturingPlanet.ExcitingPlayer != player && !hasEnemy && hasAllies)
+                    {
+                        _capturingPlanet.ResetCapture();
+                        _capturingPlanet.StartCapturing(player);
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-
-        // todo работает не правильно
-        private bool IsThereEnemy()
+        
+        private bool IsThereEnemy(PlayerType player)
         {
+            var playersOnPlanet = new List<PlayerType>();
             foreach (var playerType in GetPlayerTypesOnPlanet())
             {
-                if (_capturingPlanet.ExcitingPlayer == PlayerType.None)
+                if (!playersOnPlanet.Contains(playerType))
                 {
-                    return false;
-                }
-
-                if (playerType != _capturingPlanet.ExcitingPlayer)
-                {
-                    return true;
+                    playersOnPlanet.Add(playerType);
                 }
             }
 
-            return false;
+            return playersOnPlanet.Any(type => type != player);
         }
 
-        private bool AreThereAnyPlayers()
+        private bool AreThereAnyAllies()
         {
             return _detectedObjects.Count > 0;
         }
@@ -170,6 +198,7 @@ namespace Planets.MiningPlayer
         {
             _capturingPlanet.Dispose();
             Main.Instance.OnUpdateGame -= CustomUpdate;
+            Main.Instance.ShipManager.OnDestroyShip -= RemoveFoundShip;
         }
 
         private void CustomUpdate()
@@ -182,5 +211,6 @@ namespace Planets.MiningPlayer
             }
             OnUpdatePlayerType?.Invoke(_capturingPlanet.ExcitingPlayer);
         }
+        
     }
 }

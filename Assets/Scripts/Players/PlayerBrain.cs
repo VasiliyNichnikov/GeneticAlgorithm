@@ -1,4 +1,5 @@
-﻿using Planets.PlayerPlanet;
+﻿using Planets.MiningPlayer;
+using Planets.PlayerPlanet;
 using UnityEngine;
 
 namespace Players
@@ -6,7 +7,9 @@ namespace Players
     public class PlayerBrain : MonoBehaviour, IPlayerBrain
     {
         [SerializeField] private PlayerPlanet _planet;
-        [SerializeField] private Transform _testPointForMovement;
+        [SerializeField] private MiningPlanet _miningPlanets;
+        
+        
 
 
         private void Start()
@@ -21,7 +24,7 @@ namespace Players
         
         public Vector3 GetPointForMovement()
         {
-            return _testPointForMovement.position;
+            return _miningPlanets.GetPointToApproximate();
         }
     }
 }

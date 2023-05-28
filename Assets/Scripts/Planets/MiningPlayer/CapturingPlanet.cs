@@ -76,7 +76,7 @@ namespace Planets.MiningPlayer
                 Debug.LogWarning("Capturing is not started");
                 return;
             }
-
+            
             _currentState = CapturingStates.InProcessOfCapture;
             _isPaused = false;
         }
@@ -88,9 +88,10 @@ namespace Planets.MiningPlayer
                 Debug.LogWarning("Capturing is not started");
                 return;
             }
-
+            
             _countDownStarted = false;
             _excitingPlayer = null;
+            _remainingTimeBeforeCapture = _captureTime;
             _currentState = CapturingStates.NotCaptured;
             Main.Instance.OnUpdateGame -= CountDown;
         }

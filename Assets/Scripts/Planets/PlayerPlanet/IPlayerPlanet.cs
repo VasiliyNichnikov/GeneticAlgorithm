@@ -1,6 +1,8 @@
-﻿namespace Planets.PlayerPlanet
+﻿using FindingPath;
+
+namespace Planets.PlayerPlanet
 {
-    public interface IPlayerPlanet
+    public interface IPlayerPlanet : IObjectOnMap
     {
         void CreateRandomShipDebug();
     }

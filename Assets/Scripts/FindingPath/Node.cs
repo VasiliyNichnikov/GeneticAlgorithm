@@ -5,12 +5,12 @@ namespace FindingPath
 {
     public class Node
     {
-        public Vector3Int GridPoint { get; private set; }
+        public Vector3Int GridPoint { get; }
         [CanBeNull] public Node Preview { get; private set; }
 
         public static Node Create(Vector3Int gridPosition)
         {
-            return new Node() { GridPoint = gridPosition, Preview = null };
+            return new Node(gridPosition) { Preview = null };
         }
 
         public void SetPreviewNode(Node preview)
@@ -18,8 +18,9 @@ namespace FindingPath
             Preview = preview;
         }
 
-        private Node()
+        private Node(Vector3Int gridPoint)
         {
+            GridPoint = gridPoint;
         }
 
         public override bool Equals(object obj)
@@ -28,8 +29,13 @@ namespace FindingPath
             {
                 return GridPoint == node.GridPoint;
             }
-        
+
             return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return GridPoint.GetHashCode();
         }
     }
 }

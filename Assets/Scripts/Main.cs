@@ -2,6 +2,7 @@
 using Factories;
 using ShipLogic;
 using UI.Dialog;
+using UI.Dialog.GameController;
 using UnityEngine;
 
 public class Main : MonoBehaviour
@@ -23,6 +24,7 @@ public class Main : MonoBehaviour
     [SerializeField] private FactoryShip _factoryShip;
 
     private DialogManager _dialogManager;
+    private GameControllerManager _gameManager;
 
     private void Awake()
     {
@@ -30,10 +32,17 @@ public class Main : MonoBehaviour
 
         ShipManager = new ShipManager();
         _dialogManager = new DialogManager(_parentForDialogs, _parentForLocationUI);
+        _gameManager = new GameControllerManager();
     }
 
     private void Update()
     {
         OnUpdateGame?.Invoke();
+    }
+
+    private void OnDestroy()
+    {
+        ShipManager.Dispose();
+        _gameManager.Dispose();
     }
 }

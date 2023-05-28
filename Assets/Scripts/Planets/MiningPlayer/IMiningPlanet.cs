@@ -1,10 +1,11 @@
 ﻿using System;
+using FindingPath;
 using Players;
 using SpaceObjects;
 
 namespace Planets.MiningPlayer
 {
-    public interface IMiningPlanet
+    public interface IMiningPlanet : IObjectOnMap, ITarget
     {
         event Action<float> OnUpdateRemainingTime;
         event Action<PlayerType> OnUpdatePlayerType;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using FindingPath;
 using ShipLogic.Individual.States;
 using SpaceObjects;
 using StateMachineLogic;
@@ -8,7 +9,9 @@ namespace ShipLogic.Individual
 {
     public class IndividualCommander : IShipCommander
     {
-        public string NameCurrentState => _machine.CurrentState != null ? _machine.CurrentState.NameState : string.Empty;
+        public string NameCurrentState =>
+            _machine.CurrentState != null ? _machine.CurrentState.NameState : string.Empty;
+
         public StateBase Idle { get; private set; }
         public StateBase Attack { get; private set; }
         public StateBase Movement { get; private set; }
@@ -17,7 +20,7 @@ namespace ShipLogic.Individual
         public bool HasEnemy => _selectedEnemy != null;
         public bool HasPointForMovement => _route.IsMovement;
         public bool IsNeedStop { get; private set; }
-        
+
         private readonly List<ShipBase> _foundEnemies = new List<ShipBase>();
 
         private readonly ShipBase _ship;
@@ -31,7 +34,7 @@ namespace ShipLogic.Individual
             _route = new ShipRoute();
             InitStateMachineAndStates();
 
-            Main.Instance.OnUpdateGame += CustomUpdate;
+            TrafficMap.Map.OnMoveNonStaticObjects += CustomUpdate;
         }
 
         public void SetPointForMovement(Vector3 pointPosition)
@@ -47,7 +50,7 @@ namespace ShipLogic.Individual
             {
                 return;
             }
-            
+
             if (_foundEnemies.Contains(enemy))
             {
                 Debug.LogWarning("Current detected object is contains in list");
@@ -64,7 +67,7 @@ namespace ShipLogic.Individual
             {
                 return;
             }
-            
+
             if (!_foundEnemies.Contains(enemy))
             {
                 Debug.LogWarning("Current detected object is not contains in list");
@@ -75,7 +78,7 @@ namespace ShipLogic.Individual
             {
                 LosingSelectedEnemy();
             }
-            
+
             _foundEnemies.Remove(enemy);
         }
 
@@ -97,14 +100,14 @@ namespace ShipLogic.Individual
             {
                 return;
             }
-            
+
             _foundEnemies.Sort(SortFoundEnemies);
 
             if (_selectedEnemy != null && _foundEnemies[0] != _selectedEnemy)
             {
                 LosingSelectedEnemy();
             }
-            
+
             _selectedEnemy = _foundEnemies[0];
             _route.SetHighPriorityPoint(_selectedEnemy.transform.position);
         }
@@ -119,7 +122,7 @@ namespace ShipLogic.Individual
 
             return (int)(weight1 - weight2);
         }
-        
+
         public bool SeeOtherEnemyShip()
         {
             if (!HasEnemy)
@@ -127,7 +130,7 @@ namespace ShipLogic.Individual
                 Debug.LogError("Enemy is null");
                 return false;
             }
-            
+
             return _ship.SeeOtherShip(_selectedEnemy);
         }
 
@@ -138,7 +141,7 @@ namespace ShipLogic.Individual
                 Debug.LogError("Enemy is null");
                 return false;
             }
-            
+
             return _ship.CanAttackOtherShip(_selectedEnemy);
         }
 
@@ -186,7 +189,7 @@ namespace ShipLogic.Individual
                 Debug.LogError("Enemy is null");
                 return;
             }
-            
+
             _ship.Gun.SetTarget(_selectedEnemy);
             _ship.Gun.Shoot();
         }
@@ -195,6 +198,13 @@ namespace ShipLogic.Individual
         {
             _ship.Gun.FinishShoot();
         }
+
+#if UNITY_EDITOR
+        public Vector3 GetPointForMovement()
+        {
+            return _route.GetPointForMovement();
+        }
+#endif
 
         private void InitStateMachineAndStates()
         {
@@ -212,7 +222,7 @@ namespace ShipLogic.Individual
         {
             if (!_ship.IsDead)
             {
-                Main.Instance.OnUpdateGame -= CustomUpdate;
+                TrafficMap.Map.OnMoveNonStaticObjects -= CustomUpdate;
             }
         }
 
@@ -221,13 +231,13 @@ namespace ShipLogic.Individual
             if (_ship.IsDead)
             {
                 _ship.Hide();
-                Main.Instance.OnUpdateGame -= CustomUpdate;
+                TrafficMap.Map.OnMoveNonStaticObjects -= CustomUpdate;
                 return;
             }
-            
+
             CheckPointForMovement();
             CheckEnemiesForOpportunityToAttack();
-            
+
             _machine.CurrentState.UpdateLogic();
         }
 
@@ -238,18 +248,18 @@ namespace ShipLogic.Individual
             {
                 return false;
             }
-            
+
             if (detectedObject is not ShipBase shipEnemy)
             {
                 return false;
             }
-            
+
             // Найден союзник
             if (IsAlly(shipEnemy))
             {
                 return false;
             }
-            
+
             // Корабль мертвый
             if (shipEnemy.IsDead)
             {
@@ -259,7 +269,7 @@ namespace ShipLogic.Individual
             ship = shipEnemy;
             return true;
         }
-        
+
         private bool IsAlly(ShipBase ship)
         {
             return ship.PlayerType == _ship.PlayerType;
@@ -272,7 +282,8 @@ namespace ShipLogic.Individual
                 IsNeedStop = false;
                 return;
             }
-            IsNeedStop = Vector3.Distance(_route.GetPointForMovement(), _ship.transform.position) <= _ship.ShipRadius;
+
+            IsNeedStop = _ship.Engine.IsStopped;
             if (IsNeedStop)
             {
                 _route.ChangeAndGetPointForMovement();
@@ -286,6 +297,7 @@ namespace ShipLogic.Individual
                 Debug.LogError("Enemy is already null");
                 return;
             }
+
             _machine.ChangeState(Idle);
             _selectedEnemy = null;
             _route.SetHighPriorityPoint(null);

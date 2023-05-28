@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ShipLogic.Individual
@@ -15,6 +16,10 @@ namespace ShipLogic.Individual
         public void SetHighPriorityPoint(Vector3? highPriorityPoint)
         {
             _highPriorityPoint = highPriorityPoint;
+            if (_currentPointForMovement != null && !_pointsForMovement.Contains(_currentPointForMovement.Value))
+            {
+                _pointsForMovement.Enqueue(_currentPointForMovement.Value);
+            }
         }
 
         public void AddPointForMovement(Vector3 point)

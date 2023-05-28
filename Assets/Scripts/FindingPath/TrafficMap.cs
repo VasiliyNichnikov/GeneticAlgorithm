@@ -6,38 +6,60 @@ using Random = UnityEngine.Random;
 
 namespace FindingPath
 {
-    public class TrafficMap : MonoBehaviour, IFindingPath
+    public class TrafficMap : MonoBehaviour, IFindingPath, IDisposable
     {
         [SerializeField] private int _weight;
         [SerializeField] private int _length;
         [SerializeField] private float _cellSize;
         [SerializeField] private Vector3 _originPosition;
         [SerializeField] private Transform _parentForText;
+        [SerializeField] private HeatMapVisual _heatMapVisual;
 
-        public event Action OnMovementObjects;
+        // Двигаем не статичные корабли
+        public event Action OnMoveNonStaticObjects;
 
         private readonly List<IObjectOnMap> _objectsOnMap = new List<IObjectOnMap>();
 
         private Grid _grid;
+        
+        public static TrafficMap Map { get; private set; }
 
 
         private void Update()
         {
             // Очищаем Grid
             ClearNotStaticObjectsFromGrid();
-
+            
+            // Отрисовываем заново все статичные объекты
+            DrawStaticObjectOnGrid();
+            
             // Двигаем все движущиеся объекты
-            OnMovementObjects?.Invoke();
+            OnMoveNonStaticObjects?.Invoke();
 
             // Отрисовываем заново все движущиеся объекты
             DrawNotStaticObjectOnGrid();
         }
+        
 
-        public void Init()
+        private void Awake()
         {
-            _grid = new Grid(_weight, _length, _cellSize, _originPosition, _parentForText);
+            Map = this;
+            Init();
         }
 
+        private void Init()
+        {
+            _grid = new Grid(_weight, _length, _cellSize, _originPosition, _parentForText);
+            _heatMapVisual.SetGrid(_grid);
+            
+            _grid.OnChangeCellValue += UpdateHeatMapVisual;
+        }
+
+        private void UpdateHeatMapVisual((int x, int z) positionGrid)
+        {
+            _heatMapVisual.UpdateHeatMapVisual();
+        }
+        
         public void AddObjectOnMap(IObjectOnMap objectOnMap)
         {
             if (_objectsOnMap.Contains(objectOnMap))
@@ -55,6 +77,51 @@ namespace FindingPath
             }
         }
 
+        public void RemoveObjectOnMap(IObjectOnMap objectOnMap)
+        {
+            if (!_objectsOnMap.Contains(objectOnMap))
+            {
+                Debug.LogError("Current object not contains in list");
+                return;
+            }
+
+            _objectsOnMap.Remove(objectOnMap);
+        }
+
+        public Vector3 TryGetRandomEmptyPointAroundObject(IObjectOnMap objectOnMap, int range, out bool isFound)
+        {
+            var emptyPoints =
+                _grid.GetEmptyPointsAroundSelectedObject(objectOnMap.WorldPosition, (int)MapObjectType.Empty, range);
+            isFound = emptyPoints.Length != 0;
+
+            if (!isFound)
+            {
+                return Vector3.zero;
+            }
+            
+            var randomPoint = Random.Range(0, emptyPoints.Length);
+            return emptyPoints[randomPoint];
+        }
+        
+        public void DrawAroundObject(IObjectOnMap objectOnMap, int range)
+        {
+            _grid.AddValue(objectOnMap.WorldPosition, 5, range);
+        }
+
+        private void DrawStaticObjectOnGrid()
+        {
+            foreach (var objectOnMap in _objectsOnMap)
+            {
+                if (!objectOnMap.IsStatic)
+                {
+                    continue;
+                }
+
+                _grid.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
+                    (int)objectOnMap.TypeObject);
+            }
+        }
+        
         /// <summary>
         /// todo нужно сделать так, чтобы нельзя было стирать, если тип не равен empty
         /// </summary>
@@ -67,8 +134,10 @@ namespace FindingPath
                     continue;
                 }
 
-                _grid.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
-                    (int)objectOnMap.TypeObject);
+                if (_grid.GetValue(objectOnMap.WorldPosition) == (int)MapObjectType.Empty)
+                {
+                    _grid.SetValue(objectOnMap.WorldPosition, (int)objectOnMap.TypeObject);
+                }
             }
         }
 
@@ -81,24 +150,16 @@ namespace FindingPath
                     continue;
                 }
 
-                _grid.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
-                    (int)MapObjectType.Empty);
+                _grid.SetValue(objectOnMap.WorldPosition, (int)MapObjectType.Empty);
             }
         }
-
-        /// <summary>
-        /// todo Не работает
-        /// НУЖНО РАЗОБРАТЬСЯ
-        /// СЕЙЧАС ВОЗВРАЩАЕТСЯ В ТУ ЖЕ ТОЧКУ ОТ КУДА ВЫЛЕТЕЛ
-        /// </summary>
+        
         public Vector3[] TryToFindPath(Vector3 startPosition, Vector3 endPosition, out bool isFound)
         {
-            // Очищаем все не статичные точки (Плохая идея)
-            // ClearNotStaticObjectsFromGrid();
-            
+            var startGridPoint = _grid.GetXZ(startPosition);
             var endGridPoint = _grid.GetXZ(endPosition);
             var endNode = Node.Create(endGridPoint);
-            var reachable = new List<Node> { Node.Create(_grid.GetXZ(startPosition)) };
+            var reachable = new List<Node> { Node.Create(startGridPoint) };
             var explored = new List<Node>();
 
             while (reachable.Count > 0)
@@ -128,32 +189,17 @@ namespace FindingPath
             isFound = false;
             return Array.Empty<Vector3>();
         }
-
-        /*private void ConvertToGoal(Vector3Int goal)
-        {
-            foreach (var objectOnMap in _objectsOnMap)
-            {
-                if (!objectOnMap.IsStatic)
-                {
-                    continue;
-                }
-                if(_grid.CheckPointGridInPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition), goal)
-                {
-                    
-                }
-            }
-        }*/
-
+        
         private Vector3[] BuildPath(Node node)
         {
             var path = new List<Vector3>();
             while (node != null)
             {
-                path.Add(_grid.GetWorldPosition(node.GridPoint));
+                path.Add(_grid.GetWorldPositionCenterCell(node.GridPoint));
                 node = node.Preview;
             }
 
-            // path.Reverse();
+            path.Reverse();
             return path.ToArray();
         }
 
@@ -214,6 +260,11 @@ namespace FindingPath
                 .Where(p => _grid.GetValue(p.x, p.z) == (int)MapObjectType.Empty || p == endGridPosition)
                 .Select(Node.Create)
                 .Where(node => !explored.Contains(node));
+        }
+
+        public void Dispose()
+        {
+            _grid.OnChangeCellValue -= UpdateHeatMapVisual;
         }
     }
 }

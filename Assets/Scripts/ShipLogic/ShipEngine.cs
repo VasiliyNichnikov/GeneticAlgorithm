@@ -1,6 +1,4 @@
-﻿using System;
-using FindingPath;
-using JetBrains.Annotations;
+﻿using FindingPath;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,12 +6,13 @@ namespace ShipLogic
 {
     public interface IShipEngine
     {
-        void SetTarget(Vector3 target);
+        bool IsStopped { get; }
+        void SetTarget(Vector3 target, bool checkTarget = true);
         float TurnToTarget(Vector3 target);
         void Move();
 
 #if UNITY_EDITOR
-        NavMeshPath PathDebug { get; }
+        Vector3[] PathDebug { get; }
 #endif
     }
 
@@ -30,44 +29,42 @@ namespace ShipLogic
         private readonly Transform _shipTransform;
         private readonly NavMeshAgent _agent;
         private Vector3 _agentPosition;
-        private readonly float _radiusShip;
 
         private Vector3 _target;
         private int _pathIteration;
         private Vector3 _destination;
-
-        private NavMeshPath _path = null;
+        
+        private Vector3[] _pathForMovement;
 
 #if UNITY_EDITOR
-        [CanBeNull] public NavMeshPath PathDebug => _path;
+        public Vector3[] PathDebug => _pathForMovement;
 #endif
 
 
         public ShipEngine(
             Transform shipTransform,
             NavMeshAgent agent,
-            float radiusShip,
             float speed,
             float rotationSpeed)
         {
             _shipTransform = shipTransform;
             _agent = agent;
-            _radiusShip = radiusShip;
             _movementSpeed = speed;
             _rotationSpeed = rotationSpeed;
         }
 
-        public void SetTarget(Vector3 target)
+        public bool IsStopped => _agent.enabled && _agent.isStopped;
+
+        public void SetTarget(Vector3 target, bool checkTarget = true)
         {
-            if (_target == target)
+            if (_target == target && checkTarget)
             {
                 return;
             }
 
             _pathIteration = 1;
             _target = target;
-            _path = new NavMeshPath();
-            _agent.CalculatePath(_target, _path);
+            _pathForMovement = TrafficMap.Map.TryToFindPath(_shipTransform.position, target, out var isFound);
             _agent.isStopped = false;
         }
 
@@ -75,41 +72,31 @@ namespace ShipLogic
         {
             SetAgentPosition();
             
-            if (_path.corners.Length == 0)
+            if (_pathForMovement.Length == 0)
             {
                 return;
             }
 
-            if (_pathIteration >= _path.corners.Length)
+            if (_pathIteration >= _pathForMovement.Length)
             {
                 _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
                 _agent.isStopped = true;
                 return;
             }
 
-            _destination = _path.corners[_pathIteration];
+            _destination = _pathForMovement[_pathIteration];
 
             if (_destination.x < float.PositiveInfinity)
             {
                 var direction = _destination - _agentPosition;
                 direction.y = 0.0f;
+                
+                var newRotation = Quaternion.LookRotation(direction);
+                _shipTransform.rotation = Quaternion.Slerp(_shipTransform.rotation, newRotation,
+                    Time.deltaTime * 2.5f);
 
-                var newDirection = Vector3.RotateTowards(_shipTransform.forward, direction,
-                    _rotationSpeed * Time.deltaTime, 0.0f);
-            
-                var angleRotation = Vector3.Angle(_shipTransform.forward, direction);
-            
-                var newRotation = Quaternion.LookRotation(newDirection);
-                _shipTransform.rotation = Quaternion.RotateTowards(_shipTransform.rotation, newRotation,
-                    Time.deltaTime * _rotationSpeed);
-                
-                if (angleRotation >= 0.5f)
-                {
-                    return;
-                }
-                
                 var distance = Vector3.Distance(_agentPosition, _destination);
-                if (distance > _agent.radius + 0.1f)
+                if (distance > _agent.radius)
                 {
                     var movement = _shipTransform.forward * Time.deltaTime * _movementSpeed;
                     _agent.Move(movement);
@@ -117,7 +104,7 @@ namespace ShipLogic
                 else
                 {
                     ++_pathIteration;
-                    if (_pathIteration >= _path.corners.Length)
+                    if (_pathIteration >= _pathForMovement.Length)
                     {
                         _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity,
                             float.PositiveInfinity);

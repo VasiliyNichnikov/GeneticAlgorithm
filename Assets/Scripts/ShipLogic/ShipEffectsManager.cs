@@ -28,7 +28,7 @@ namespace ShipLogic
 
         [SerializeField] private Effect[] _effects;
 
-        private void Start()
+        public void Init()
         {
             foreach (var effectType in Enum.GetValues(typeof(TypeEffect)))
             {

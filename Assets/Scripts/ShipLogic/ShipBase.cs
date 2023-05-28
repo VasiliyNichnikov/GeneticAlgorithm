@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using FindingPath;
 using HandlerClicks;
 using Players;
 using SpaceObjects;
@@ -7,8 +8,15 @@ using UnityEngine;
 
 namespace ShipLogic
 {
-    public abstract class ShipBase : MonoBehaviour, IObjectToClick, ITargetToAttack, IDisposable
+    public abstract class ShipBase : MonoBehaviour, IObjectToClick, ITargetToAttack, IDisposable, IObjectOnMap
     {
+        public MapObjectType TypeObject => MapObjectType.Ship;
+        public bool IsStatic { get; private set; }
+
+        public Vector3 WorldPosition => transform.position;
+        public Vector3 LeftBottomPosition => transform.position;
+        public Vector3 RightTopPosition => transform.position;
+        
         public DetectedObjectType ObjectType => DetectedObjectType.Ship;
         public Vector3 Position => transform.position;
         public float ShipRadius => _shipData.RadiusShip;
@@ -25,7 +33,8 @@ namespace ShipLogic
         [SerializeField] private ShipSkinData[] _skins;
 
         public ShipData CalculatedShipData => _calculatedShipData;
-        public string NameCurrentState => _commander.NameCurrentState;
+
+        public string NameCurrentState => _commander == null ? "Not commander" : _commander.NameCurrentState;
 
         private ShipSkinData _shipData;
         private IShipCommander _commander;
@@ -60,13 +69,14 @@ namespace ShipLogic
                 Debug.LogError("Ship is already initialized");
                 return;
             }
-
+            
             InitSkin(builder.Data);
             _commander = builder.Commander;
 
             _isInitialized = true;
             PlayerType = builder.PlayerType;
             Detector.Init(builder.PlayerType, _commander);
+            _shipData.EffectsManager.Init();
         }
 
         public void InitCache(Action addShipInCache)
@@ -113,7 +123,8 @@ namespace ShipLogic
             {
                 return;
             }
-            
+
+            IsStatic = true;
             _shipData.Agent.enabled = false;
             _shipData.EffectsManager.TurnOffEngine();
         }
@@ -124,8 +135,8 @@ namespace ShipLogic
             {
                 return;
             }
-
             
+            IsStatic = false;
             _shipData.Agent.enabled = true;
             _shipData.EffectsManager.TurnOnEngine();
         }
@@ -178,7 +189,7 @@ namespace ShipLogic
             Health = new ShipHealth(minMaxHealth.minValue, minMaxHealth.maxValue, 0, data.Armor,
                 PercentageOfArmorAbsorption);
             // Инициализация двигателя
-            Engine = new ShipEngine(transform, _shipData.Agent, _shipData.RadiusShip, _calculatedShipData.SpeedMovement,
+            Engine = new ShipEngine(transform, _shipData.Agent, _calculatedShipData.SpeedMovement,
                 _calculatedShipData.SpeedMovement);
             // Инициализация оружия
             Gun = new ShipGun(this, _shipData.GunPoints, _calculatedShipData.RateOfFire, _calculatedShipData.GunPower);
@@ -202,17 +213,23 @@ namespace ShipLogic
             Gizmos.color = new Color(1, 0, 0, 0.25f);
             Gizmos.DrawSphere(transform.position, _shipData.RadiusShip);
 
+            if (_commander != null)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawSphere(_commander.GetPointForMovement(), 1.5f);
+            }
+
             Gizmos.color = Color.blue;
-            if (Engine?.PathDebug == null || Engine.PathDebug.corners.Length <= 0)
+            if (Engine?.PathDebug == null || Engine.PathDebug.Length == 0)
             {
                 return;
             }
 
-            var previewPoint = Engine.PathDebug.corners[0];
-            for (var i = 0; i < Engine.PathDebug.corners.Length - 1; i++)
+            var previewPoint = Engine.PathDebug[0];
+            for (var i = 0; i < Engine.PathDebug.Length - 1; i++)
             {
-                Gizmos.DrawLine(previewPoint, Engine.PathDebug.corners[i + 1]);
-                previewPoint = Engine.PathDebug.corners[i + 1];
+                Gizmos.DrawLine(previewPoint, Engine.PathDebug[i + 1]);
+                previewPoint = Engine.PathDebug[i + 1];
             }
         }
 #endif
