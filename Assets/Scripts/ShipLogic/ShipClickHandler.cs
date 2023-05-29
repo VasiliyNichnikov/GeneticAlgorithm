@@ -64,5 +64,15 @@ namespace ShipLogic
             });
             infoAboutShip.Init(parameters.AsReadOnly());
         }
+
+        public void OnStartDrag()
+        {
+            // nothing
+        }
+
+        public void OnEndDrag()
+        {
+            // nothing
+        }
     }
 }

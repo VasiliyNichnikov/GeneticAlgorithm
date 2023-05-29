@@ -29,9 +29,10 @@ namespace Planets.MiningPlayer
         public Vector3 WorldPosition => transform.position;
         public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
         public Vector3 RightTopPosition => _perimeter.RightTopPoint;
-        
-        public event Action<float> OnUpdateRemainingTime;
+        public event Action<float> OnUpdateRemainingTimeCatch;
         public event Action<PlayerType> OnUpdatePlayerType;
+        public event Action<PlayerType, float> OnUpdateRemainingTimeExtraction;
+        public event Action<PlayerType, float> OnPlayerCollectedGold; 
         public float CaptureTime => _captureTime;
 
         // todo желательно вынести в отдельный файл с настройками
@@ -43,6 +44,10 @@ namespace Planets.MiningPlayer
         [SerializeField] private PerimeterOfObject _perimeter;
 
         private CapturingPlanet _capturingPlanet;
+        /// <summary>
+        /// Рассчитываем время добычи
+        /// </summary>
+        private EarnerCalculator _earnerCalculator;
 
         private readonly List<IDetectedObject> _detectedObjects = new List<IDetectedObject>();
 
@@ -57,6 +62,9 @@ namespace Planets.MiningPlayer
             
             _detector.Init(this);
             _capturingPlanet = new CapturingPlanet(_captureTime);
+            _earnerCalculator = new EarnerCalculator();
+            _earnerCalculator.OnGoldCollected += OnPlayerCollectedGold;
+
             _miningPlanetDialog = Main.Instance.DialogManager.GetNewLocationDialog<InfoAboutMiningPlanetDialog>();
             _miningPlanetDialog.Init(this, transform);
             Main.Instance.OnUpdateGame += CustomUpdate;
@@ -71,6 +79,7 @@ namespace Planets.MiningPlayer
             }
             
             _detectedObjects.Add(detectedObject);
+            _earnerCalculator.AddShip(detectedObject.PlayerType);
             CheckOutPlanetForTwoPlayers();
         }
 
@@ -83,6 +92,7 @@ namespace Planets.MiningPlayer
             
             // Проблема, что мы не проверяем уничтожился корабль или нет
             _detectedObjects.Remove(detectedObject);
+            _earnerCalculator.RemoveShip(detectedObject.PlayerType);
             CheckOutPlanetForTwoPlayers();
         }
 
@@ -199,17 +209,31 @@ namespace Planets.MiningPlayer
             _capturingPlanet.Dispose();
             Main.Instance.OnUpdateGame -= CustomUpdate;
             Main.Instance.ShipManager.OnDestroyShip -= RemoveFoundShip;
+            _earnerCalculator.OnGoldCollected -= OnPlayerCollectedGold;
         }
 
         private void CustomUpdate()
         {
-            var value = Converter.ConvertFromOneRangeToAnother(0, _captureTime, 0, 1,
+            var timeLeftCapture = Converter.ConvertFromOneRangeToAnother(0, _captureTime, 0, 1,
                 _capturingPlanet.RemainingTimeBeforeCapture);
-            if (value > 0)
+            if (timeLeftCapture > 0)
             {
-                OnUpdateRemainingTime?.Invoke(value);
+                OnUpdateRemainingTimeCatch?.Invoke(timeLeftCapture);
             }
             OnUpdatePlayerType?.Invoke(_capturingPlanet.ExcitingPlayer);
+
+            foreach (var playerType in new [] {PlayerType.Player1, PlayerType.Player2})
+            {
+                var timeLeftExtraction = _earnerCalculator.GetTimeLeftForSelectedPlayer(playerType);
+                if (timeLeftExtraction == null)
+                {
+                    OnUpdateRemainingTimeExtraction?.Invoke(playerType, 0.0f);
+                    continue;
+                }
+
+                OnUpdateRemainingTimeExtraction?.Invoke(playerType, timeLeftExtraction.Value);
+            }
+            
         }
         
     }

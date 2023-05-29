@@ -72,6 +72,7 @@ MonoBehaviour:
   _playerPlanetDialog: {fileID: 1791063813157204604, guid: 5ed0cbdffd2869b4a8cf86f41aff12d9, type: 3}
   _perimeter: {fileID: 1335771692522942246}
   _renderer: {fileID: 6367751940355612871}
+  _clickHandler: {fileID: 6077175506417837589}
 --- !u!114 &1335771692522942246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,6 +226,7 @@ GameObject:
   - component: {fileID: 6367751940355612871}
   - component: {fileID: 2518111044265399433}
   - component: {fileID: 5111132831758750346}
+  - component: {fileID: 6077175506417837589}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -324,3 +326,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speedRotation: 15
+--- !u!114 &6077175506417837589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6831260567437023063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeac274dcc1a4e66884635d746aa4ca9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

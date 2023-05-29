@@ -35,7 +35,6 @@ namespace Pool
             {
                 throw new Exception($"Not created new dialog: {typeof(T)}");
             }
-
             newDialog.InitHideAction(() => HideDialog(newDialog));
             _usedDialogs.Add(newDialog);
             newDialog.Show();

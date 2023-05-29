@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Planets.MiningPlayer;
 using Players;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Utils;
 
@@ -10,9 +12,12 @@ namespace UI.Dialog.InfoAboutMiningPlanet
     public class InfoAboutMiningPlanetDialog : DialogBase, IDisposable
     {
         [SerializeField] private Text _title;
-        [SerializeField] private ProductionPerMinute _productionPerMinute;
+        [SerializeField] private ProductionGold _productionGoldPrefab;
         [SerializeField] private CapturingPoint _capturingPoint;
         [SerializeField] private RectTransform _rect;
+        [SerializeField] private RectTransform _holderForProduction;
+
+        private readonly Dictionary<PlayerType, ProductionGold> _poolProductions = new Dictionary<PlayerType, ProductionGold>();
 
         private IMiningPlanet _planet;
         private Transform _planetTransform;
@@ -29,8 +34,9 @@ namespace UI.Dialog.InfoAboutMiningPlanet
             _planet = planet;
             _planetTransform = planetTransform;
             
-            _planet.OnUpdateRemainingTime += ChangeSliderValue;
-            _planet.OnUpdatePlayerType += ChangePlayerName;
+            _planet.OnUpdateRemainingTimeCatch += ChangeSliderValue;
+            _planet.OnUpdatePlayerType += ChangePlayerNameCapturingPoint;
+            _planet.OnUpdateRemainingTimeExtraction += CheckAndChangeProductionTime;
             Main.Instance.OnUpdateGame += CustomUpdate;
             _isInitialized = true;
         }
@@ -46,22 +52,16 @@ namespace UI.Dialog.InfoAboutMiningPlanet
             _capturingPoint.SetSlider(time, _planet.CaptureTime);
         }
 
-        private void ChangePlayerName(PlayerType playerType)
+        private void ChangePlayerNameCapturingPoint(PlayerType playerType)
         {
-            switch(playerType)
+            var playerName = PlayerUtils.GetPlayerName(playerType);
+            if (playerName == string.Empty)
             {
-                case PlayerType.None:
-                    _capturingPoint.ResetName();
-                    break;
-                case PlayerType.Player1:
-                    _capturingPoint.SetPlayerName("Player One");
-                    _capturingPoint.SetColorSlider(Main.Instance.ColorStorage.GetColorForPlayer(PlayerType.Player1));
-                    break;
-                case PlayerType.Player2:
-                    _capturingPoint.SetPlayerName("Player Two");
-                    _capturingPoint.SetColorSlider(Main.Instance.ColorStorage.GetColorForPlayer(PlayerType.Player2));
-                    break;
+                _capturingPoint.ResetName();
+                return;
             }
+            _capturingPoint.SetPlayerName(playerName);
+            _capturingPoint.SetColorSlider(Main.Instance.ColorStorage.GetColorForPlayer(playerType));
         }
 
         private void CustomUpdate()
@@ -76,9 +76,31 @@ namespace UI.Dialog.InfoAboutMiningPlanet
                 return;
             }
             
-            _planet.OnUpdateRemainingTime -= ChangeSliderValue;
-            _planet.OnUpdatePlayerType -= ChangePlayerName;
+            _planet.OnUpdateRemainingTimeCatch -= ChangeSliderValue;
+            _planet.OnUpdatePlayerType -= ChangePlayerNameCapturingPoint;
+            _planet.OnUpdateRemainingTimeExtraction -= CheckAndChangeProductionTime;
             Main.Instance.OnUpdateGame -= CustomUpdate;
+        }
+
+        private void CheckAndChangeProductionTime(PlayerType player, float timeLeft)
+        {
+            var production = GetProduction(player);
+            production.SetSlider(timeLeft, 1.0f);
+        }
+        
+        private ProductionGold GetProduction(PlayerType player)
+        {
+            if (_poolProductions.TryGetValue(player, out var production))
+            {
+                return production;
+            }
+
+            var newProduction = Instantiate(_productionGoldPrefab, _holderForProduction, false);
+            var color = Main.Instance.ColorStorage.GetColorForPlayer(player);
+            var playerName = PlayerUtils.GetPlayerName(player);
+            newProduction.Init(color, playerName);
+            _poolProductions[player] = newProduction;
+            return newProduction;
         }
     }
 }

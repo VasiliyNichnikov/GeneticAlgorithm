@@ -203,6 +203,16 @@ namespace ShipLogic
             _clickHandler.Clicked();
         }
 
+        public void OnStartDrag()
+        {
+            // nothing
+        }
+
+        public void OnEndDrag()
+        {
+            // nothing
+        }
+
 
 #if UNITY_EDITOR
 

@@ -20,6 +20,8 @@ namespace ShipLogic
     {
         #region Speed
 
+        private const float CustomRotationSpeed = 2.5f;
+        
         private readonly float _movementSpeed;
         private readonly float _rotationSpeed;
 
@@ -93,7 +95,7 @@ namespace ShipLogic
                 
                 var newRotation = Quaternion.LookRotation(direction);
                 _shipTransform.rotation = Quaternion.Slerp(_shipTransform.rotation, newRotation,
-                    Time.deltaTime * 2.5f);
+                    Time.deltaTime * CustomRotationSpeed);
 
                 var distance = Vector3.Distance(_agentPosition, _destination);
                 if (distance > _agent.radius)
@@ -127,14 +129,11 @@ namespace ShipLogic
             var direction = target - _shipTransform.position;
             direction.y = 0.0f;
             
-            var newDirection =
-                Vector3.RotateTowards(_shipTransform.forward, direction, _rotationSpeed * Time.deltaTime, 0.0f);
-            var newRotation = Quaternion.LookRotation(newDirection);
+            var newRotation = Quaternion.LookRotation(direction);
+            _shipTransform.rotation = Quaternion.Slerp(_shipTransform.rotation, newRotation,
+                Time.deltaTime * CustomRotationSpeed);
 
-            _shipTransform.rotation =
-                Quaternion.RotateTowards(_shipTransform.rotation, newRotation, Time.deltaTime * _rotationSpeed);
-
-            return Vector3.Angle(_shipTransform.forward, newDirection);
+            return Vector3.Angle(_shipTransform.forward, direction);
         }
         
     }

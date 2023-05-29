@@ -423,7 +423,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _materials:
   - _player: 1
-    _material: {fileID: 2100000, guid: 73847fc4fb99162448a1fe0fd636c712, type: 2}
+    _material: {fileID: 2100000, guid: 4cee7a5983b187943adc589b9cb1f084, type: 2}
     _type: 1
   - _player: 2
     _material: {fileID: 2100000, guid: eaee0f11d6e5b7d4db338fedb688937e, type: 2}
@@ -654,7 +654,7 @@ MonoBehaviour:
   _originPosition: {x: -180, y: 0, z: -180}
   _parentForText: {fileID: 708963832}
   _heatMapVisual: {fileID: 1943012217}
-  _isShowDebugMap: 1
+  _isShowDebugMap: 0
 --- !u!1 &729015103
 GameObject:
   m_ObjectHideFlags: 0
@@ -869,6 +869,10 @@ PrefabInstance:
     - target: {fileID: 4509605632214222887, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
+      propertyPath: _player
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: _miningPlanets
@@ -1737,6 +1741,10 @@ PrefabInstance:
     - target: {fileID: 4509036432674724741, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: m_Name
       value: PlanetPlayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
+      propertyPath: _player
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4509605632291128765, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: _miningPlanets

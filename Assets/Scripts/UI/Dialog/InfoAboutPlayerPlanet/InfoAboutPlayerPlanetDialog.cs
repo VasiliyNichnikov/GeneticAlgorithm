@@ -9,6 +9,7 @@ namespace UI.Dialog.InfoAboutPlayerPlanet
     {
         [SerializeField] private RectTransform _rect;
         [SerializeField] private CreatorShip _creatorShip;
+        [SerializeField] private PlayerGoldQuantity _goldQuantity;
 
         private IPlayerPlanet _planet;
         private Transform _planetTransform;
@@ -28,11 +29,25 @@ namespace UI.Dialog.InfoAboutPlayerPlanet
             _isInitialized = true;
 
             _creatorShip.Init(planet.CreateRandomShipDebug);
+            _goldQuantity.SetGoldValue(_planet.CurrentGold);
+            _rect.PinUIObjectToObjectOnScene(_planetTransform.position);
+        }
+
+        public void UpdateCurrentGold()
+        {
+            _goldQuantity.SetGoldValue(_planet.CurrentGold);
         }
         
         private void CustomUpdate()
         {
-            _rect.PinUIObjectToObjectOnScene(_planetTransform.position);
+            
+        }
+
+        public override void Hide()
+        {
+            base.Hide();
+            Dispose();
+            _isInitialized = false;
         }
 
         public void Dispose()
