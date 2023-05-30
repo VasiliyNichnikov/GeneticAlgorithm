@@ -1,12 +1,15 @@
 ﻿using System;
 using Planets.PlayerPlanet;
+using Players;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils;
 
 namespace UI.Dialog.InfoAboutPlayerPlanet
 {
     public class InfoAboutPlayerPlanetDialog : DialogBase, IDisposable
     {
+        [SerializeField] private Text _playerName;
         [SerializeField] private RectTransform _rect;
         [SerializeField] private CreatorShip _creatorShip;
         [SerializeField] private PlayerGoldQuantity _goldQuantity;
@@ -16,7 +19,7 @@ namespace UI.Dialog.InfoAboutPlayerPlanet
 
         private bool _isInitialized;
         
-        public void Init(IPlayerPlanet planet, Transform planetTransform)
+        public void Init(IPlayerPlanet planet, PlayerType player, Transform planetTransform)
         {
             if (_isInitialized)
             {
@@ -24,6 +27,7 @@ namespace UI.Dialog.InfoAboutPlayerPlanet
             }
             
             _planet = planet;
+            _playerName.text = PlayerUtils.GetPlayerName(player);
             _planetTransform = planetTransform;
             Main.Instance.OnUpdateGame += CustomUpdate;
             _isInitialized = true;

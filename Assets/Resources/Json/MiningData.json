@@ -7,7 +7,7 @@
     },
     {
       "Name": "MaximumTimeMining",
-      "Value": 100.0,
+      "Value": 10.0,
       "Comment": "Максимальное время добычи"
     },
     {

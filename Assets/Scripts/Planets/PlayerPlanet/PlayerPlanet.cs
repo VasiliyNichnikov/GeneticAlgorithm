@@ -64,7 +64,7 @@ namespace Planets.PlayerPlanet
             }
             
             _playerPlanetDialog = Main.Instance.DialogManager.GetNewLocationDialog<InfoAboutPlayerPlanetDialog>();
-            _playerPlanetDialog.Init(this, transform);
+            _playerPlanetDialog.Init(this, _player, transform);
         }
 
         public void OnEndDrag()
