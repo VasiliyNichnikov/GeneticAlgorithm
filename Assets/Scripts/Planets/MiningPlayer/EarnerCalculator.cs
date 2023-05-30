@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Loaders;
 using Players;
 using UnityEngine;
 
@@ -18,30 +19,44 @@ namespace Planets.MiningPlayer
             public float TimeLeft => _timeLeft;
 
             private float _timeLeft;
+            private float _timeLeftWithoutPercentage;
+
+            private readonly float _minimumTimeLeft;
+            private readonly float _maximumTimeLeft;
+            private readonly float _percentageForNumberShipsInZone;
+
+            private float _percentageMining;
             private int _numberShipsInZone;
             private readonly Action<float> _onGoldCollected;
 
-            public MiningLogic(float timeLeft, int numberShipsInZone, Action<float> onGoldCollected)
+            public MiningLogic(float minimumTimeLeft, float maximumTimeLeft, float percentageForNumberShipsInZone,
+                int startingNumberShipsInZone, Action<float> onGoldCollected)
             {
-                if (numberShipsInZone <= 0)
+                if (startingNumberShipsInZone <= 0)
                 {
-                    Debug.LogError($"Number ships must be more zero (Current: {numberShipsInZone})");
+                    Debug.LogError($"Number ships must be more zero (Current: {startingNumberShipsInZone})");
                     _numberShipsInZone = 1;
-                    _timeLeft = timeLeft;
-                    return;
                 }
-                
-                _timeLeft = timeLeft;
-                _numberShipsInZone = numberShipsInZone;
-                _onGoldCollected = onGoldCollected;
+                else
+                {
+                    _numberShipsInZone = startingNumberShipsInZone;
+                }
 
+                _minimumTimeLeft = minimumTimeLeft;
+                _maximumTimeLeft = maximumTimeLeft;
+                _percentageForNumberShipsInZone = percentageForNumberShipsInZone;
+                _timeLeft = _maximumTimeLeft;
+                _timeLeftWithoutPercentage = _maximumTimeLeft;
+                _onGoldCollected = onGoldCollected;
+                _percentageMining = RecalculatePercentage();
+                
                 Main.Instance.OnUpdateGame += CustomUpdate;
             }
 
             public void AddShip()
             {
                 _numberShipsInZone += 1;
-                _timeLeft = RecalculateMiningTime();
+                _percentageMining = RecalculatePercentage();
             }
 
             public bool CanRemoveShip()
@@ -51,15 +66,16 @@ namespace Planets.MiningPlayer
 
             private void CustomUpdate()
             {
-                _timeLeft -= Time.deltaTime;
+                _timeLeftWithoutPercentage -= Time.deltaTime;
+                _timeLeft = _timeLeftWithoutPercentage - (_maximumTimeLeft - _minimumTimeLeft) * _percentageMining;
                 if (_timeLeft <= 0)
                 {
-                    // todo нужно будет внести число добытых монет
                     _onGoldCollected?.Invoke(10);
-                    _timeLeft = RecalculateMiningTime();
+                    _timeLeft = _maximumTimeLeft;
+                    _timeLeftWithoutPercentage = _maximumTimeLeft;
                 }
             }
-            
+
             public void RemoveShip()
             {
                 if (_numberShipsInZone - 1 <= 0)
@@ -69,7 +85,7 @@ namespace Planets.MiningPlayer
                 }
 
                 _numberShipsInZone -= 1;
-                _timeLeft = RecalculateMiningTime();
+                _percentageMining = RecalculatePercentage();
             }
 
 
@@ -79,17 +95,27 @@ namespace Planets.MiningPlayer
                 Main.Instance.OnUpdateGame -= CustomUpdate;
             }
 
-            private float RecalculateMiningTime()
+            private float RecalculatePercentage()
             {
-                // todo доделать
-                // Логика следующая: чем больше кораблей, тем быстрей идет добыча
-                // Так же надо учитывать после добавления нового корабля
-                return 1.0f;
+                var currentPercentage = _numberShipsInZone * _percentageForNumberShipsInZone;
+                if (currentPercentage >= 100)
+                {
+                    currentPercentage = 99.9f / 100f;
+                }else if (currentPercentage == 0)
+                {
+                    currentPercentage = 1;
+                }
+                else
+                {
+                    currentPercentage /= 100;
+                }
+
+                return currentPercentage;
             }
         }
 
         public event Action<PlayerType, float> OnGoldCollected;
-        
+
         public float? GetTimeLeftForSelectedPlayer(PlayerType player)
         {
             if (!_playersMiningData.ContainsKey(player))
@@ -100,11 +126,12 @@ namespace Planets.MiningPlayer
             return _playersMiningData[player].TimeLeft;
         }
 
-        private readonly Dictionary<PlayerType, MiningLogic> _playersMiningData = new Dictionary<PlayerType, MiningLogic>();
+        private readonly Dictionary<PlayerType, MiningLogic> _playersMiningData =
+            new Dictionary<PlayerType, MiningLogic>();
 
         public void AddShip(PlayerType player)
         {
-            if(!_playersMiningData.ContainsKey(player))
+            if (!_playersMiningData.ContainsKey(player))
             {
                 StartMining(player);
                 return;
@@ -115,7 +142,7 @@ namespace Planets.MiningPlayer
 
         public void RemoveShip(PlayerType player)
         {
-            if(!_playersMiningData.ContainsKey(player))
+            if (!_playersMiningData.ContainsKey(player))
             {
                 Debug.LogWarning($"Player {player} has not started mining yet");
                 return;
@@ -140,8 +167,17 @@ namespace Planets.MiningPlayer
                 return;
             }
 
-            // todo доделать
-            _playersMiningData[player] = new MiningLogic(1.0f, numberShipsInZone, gold => OnGoldCollectedAction(player, gold));
+            var loader = Main.Instance.LoaderManager.Get<MiningPlanetLoader>();
+            if (loader != null)
+            {
+                var miningLogic = new MiningLogic(
+                    loader.GetMinimumTimeMining(),
+                    loader.GetMaximumTimeMining(),
+                    loader.AccelerationPercentageForEachShip(),
+                    numberShipsInZone,
+                    gold => OnGoldCollectedAction(player, gold));
+                _playersMiningData[player] = miningLogic;
+            }
         }
 
         private void StopMining(PlayerType player)

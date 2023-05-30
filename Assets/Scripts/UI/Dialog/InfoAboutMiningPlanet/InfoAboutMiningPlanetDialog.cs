@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Loaders;
 using Planets.MiningPlayer;
 using Players;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Utils;
 
@@ -49,7 +49,7 @@ namespace UI.Dialog.InfoAboutMiningPlanet
                 return;
             }
             
-            _capturingPoint.SetSlider(time, _planet.CaptureTime);
+            _capturingPoint.SetSlider(1 - time, _planet.CaptureTime);
         }
 
         private void ChangePlayerNameCapturingPoint(PlayerType playerType)
@@ -85,7 +85,19 @@ namespace UI.Dialog.InfoAboutMiningPlanet
         private void CheckAndChangeProductionTime(PlayerType player, float timeLeft)
         {
             var production = GetProduction(player);
-            production.SetSlider(timeLeft, 1.0f);
+            var loader = Main.Instance.LoaderManager.Get<MiningPlanetLoader>();
+
+            if (loader == null)
+            {
+                return;
+            }
+
+            var minimumTime = loader.GetMinimumTimeMining();
+            var maximumTime = loader.GetMaximumTimeMining();
+            
+            var currentValue = Converter.ConvertFromOneRangeToAnother(minimumTime,
+                maximumTime, 0, 1, timeLeft);
+            production.SetSlider(currentValue, minimumTime ,maximumTime);
         }
         
         private ProductionGold GetProduction(PlayerType player)

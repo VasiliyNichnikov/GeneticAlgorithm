@@ -1,0 +1,19 @@
+﻿{
+  "Parameters": [
+    {
+      "Name": "MinimumTimeMining",
+      "Value": 0.0,
+      "Comment": "Минимальное время добычи"
+    },
+    {
+      "Name": "MaximumTimeMining",
+      "Value": 100.0,
+      "Comment": "Максимальное время добычи"
+    },
+    {
+      "Name": "AccelerationPercentageForEachShip",
+      "Value": 5,
+      "Comment": "Процент ускорения за каждый корабль в зоне"
+    }
+  ]
+}

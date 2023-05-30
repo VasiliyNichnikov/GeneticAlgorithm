@@ -17,7 +17,7 @@ namespace UI.Dialog.InfoAboutMiningPlanet
             _playerName.text = playerName;
         }
         
-        public void SetSlider(float value, float maxValue)
+        public void SetSlider(float value, float minValue, float maxValue)
         {
             if (value < 0 || value > 1)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using Factories;
+using Loaders;
 using ShipLogic;
 using Storages;
 using UI.Dialog;
@@ -19,6 +20,7 @@ public class Main : MonoBehaviour
     public Canvas LocationCanvas => _locationCanvas;
     public MaterialStorage MaterialStorage => _materialStorage;
     public ColorStorage ColorStorage => _colorStorage;
+    public ILoaderManager LoaderManager => _loaderManager;
 
     [SerializeField] private MainShipParameters _shipParameters;
     [SerializeField] private RectTransform _parentForDialogs;
@@ -30,6 +32,7 @@ public class Main : MonoBehaviour
 
     private DialogManager _dialogManager;
     private GameControllerManager _gameManager;
+    private LoaderManager _loaderManager;
 
     private void Awake()
     {
@@ -38,8 +41,16 @@ public class Main : MonoBehaviour
         ShipManager = new ShipManager();
         _dialogManager = new DialogManager(_parentForDialogs, _parentForLocationUI);
         _gameManager = new GameControllerManager();
+        _loaderManager = new LoaderManager(this);
+
+        InitLoaders();
     }
 
+    private void InitLoaders()
+    {
+        _loaderManager.AddLoaderInQueue(new MiningPlanetLoader());
+    }
+    
     private void Update()
     {
         OnUpdateGame?.Invoke();
