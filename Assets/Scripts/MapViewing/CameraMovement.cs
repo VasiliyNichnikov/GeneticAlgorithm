@@ -14,22 +14,22 @@ namespace MapViewing
         private void Update()
         {
             var position = transform.position;
-            if (Input.GetKey(KeyCode.W) || Input.mousePosition.y >= Screen.height - _panBorderThickness)
+            if (Input.GetKey(KeyCode.UpArrow) || Input.mousePosition.y >= Screen.height - _panBorderThickness)
             {
                 position.x -= _panSpeed * Time.deltaTime;
             }
 
-            if (Input.GetKey(KeyCode.S) || Input.mousePosition.y <= _panBorderThickness)
+            if (Input.GetKey(KeyCode.DownArrow) || Input.mousePosition.y <= _panBorderThickness)
             {
                 position.x += _panSpeed * Time.deltaTime;
             }
 
-            if (Input.GetKey(KeyCode.D) || Input.mousePosition.x >= Screen.width - _panBorderThickness)
+            if (Input.GetKey(KeyCode.RightArrow) || Input.mousePosition.x >= Screen.width - _panBorderThickness)
             {
                 position.z += _panSpeed * Time.deltaTime;
             }
 
-            if (Input.GetKey(KeyCode.A) || Input.mousePosition.x <= _panBorderThickness)
+            if (Input.GetKey(KeyCode.LeftArrow) || Input.mousePosition.x <= _panBorderThickness)
             {
                 position.z -= _panSpeed * Time.deltaTime;
             }

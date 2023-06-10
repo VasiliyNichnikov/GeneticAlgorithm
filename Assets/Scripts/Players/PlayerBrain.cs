@@ -1,46 +1,91 @@
 ﻿using System;
+using System.Linq;
+using CommandsShip;
+using Map;
 using Planets.MiningPlayer;
-using Planets.PlayerPlanet;
+using ShipLogic;
 using UnityEngine;
 
 namespace Players
 {
-    public class PlayerBrain : MonoBehaviour, IPlayerBrain
+    public class PlayerBrain : IDisposable
     {
-        [SerializeField] private PlayerType _player;
-        [SerializeField] private PlayerPlanet _planet;
-        // todo в будущем будут две планеты
-        [SerializeField] private MiningPlanet _miningPlanets;
+        private readonly IMiningPlanet[] _miningPlanets;
+        private readonly PlayerType _player;
 
-        private void Start()
+        public PlayerBrain(PlayerType player, IMiningPlanet[] miningPlanet)
         {
-            Init();
+            _player = player;
+            _miningPlanets = miningPlanet;
+
+            if (!Main.Instance.IsDebugMode)
+            {
+                Main.Instance.OnUpdateGame += CustomUpdate;
+            }
         }
 
-        private void Init()
+
+        private void CustomUpdate()
         {
-            _miningPlanets.OnPlayerCollectedGold += UpdateGoldValue;
-            _planet.Init(_player, this);
+            GenerateTasks();
         }
         
-        public Vector3 GetPointForMovement()
+        private void GenerateTasks()
         {
-            return _miningPlanets.GetPointToApproximate();
-        }
+            var playerLiveShips = SpaceMap.Map.GetAlliedShipsOnMap(_player);
 
-        private void OnDestroy()
-        {
-            _miningPlanets.OnPlayerCollectedGold -= UpdateGoldValue;
-        }
-
-        private void UpdateGoldValue(PlayerType player, float addedGold)
-        {
-            if (player != _player)
+            foreach (var ship in playerLiveShips)
             {
-                return;
+                // Debug.LogWarning($"Health percentage: {ship.HealthPercentages}. Player: {_player}");
+                // Если с кораблем все ок, пытаемся долететь до точки с добычой ресурсов
+                if (ship.HealthPercentages >= 0.7f)
+                {
+                    GiveCommandToMoveToMiningPlanet(ship);
+                    continue;
+                }
+                
+                // Если корабль почти погибает и численость на стороне врага, пытаемся сбежать из боя
+                if (ship.IsInBattle && 
+                    // ship.NumberOfEnemiesNearby > ship.NumberOfAlliesNearby &&
+                    ship.HealthPercentages <= 0.45f)
+                {
+                    GiveCommandEscape(ship);
+                    continue;
+                }
+
+                continue;
+                // Если корабль в бою и у него мало здоровья и численность врагом, то просим о помощи
+                if (ship.IsInBattle &&
+                    ship.NumberOfEnemiesNearby > ship.NumberOfAlliesNearby && 
+                    ship.HealthPercentages <= 0.5f)
+                {
+                    GiveCommandHelp(ship);
+                    continue;
+                }
             }
-            
-            _planet.AddExtractedGold(addedGold);
+        }
+
+        private void GiveCommandToMoveToMiningPlanet(IShipInfo shipInfo)
+        {
+            shipInfo.ExecuteCommand(Command.Movement(_miningPlanets[0]));
+        }
+
+        private void GiveCommandHelp(IShipInfo shipInfo)
+        {
+            shipInfo.ExecuteCommand(Command.Help(_player, shipInfo.ShipTarget));
+        }
+
+        private void GiveCommandEscape(IShipInfo shipInfo)
+        {
+            shipInfo.ExecuteCommand(Command.EscapeFromBattle(_player));
+        }
+
+        public void Dispose()
+        {
+            if (!Main.Instance.IsDebugMode)
+            {
+                Main.Instance.OnUpdateGame -= CustomUpdate;
+            }
         }
     }
 }

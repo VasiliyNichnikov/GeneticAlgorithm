@@ -14,6 +14,7 @@ namespace ShipLogic.Editor
         private SerializedProperty _visibilityRadius;
         private SerializedProperty _gunPower;
         private SerializedProperty _armor;
+        private SerializedProperty _isMiningShip;
 
         private delegate (float minValue, float maxValue) GetRangeData(SerializedProperty property);
 
@@ -27,6 +28,7 @@ namespace ShipLogic.Editor
             _rateOfFire = serializedObject.FindProperty("_rateOfFire");
             _gunPower = serializedObject.FindProperty("_gunPower");
             _armor = serializedObject.FindProperty("_armor");
+            _isMiningShip = serializedObject.FindProperty("_isMiningShip");
         }
 
         public override void OnInspectorGUI()
@@ -41,6 +43,7 @@ namespace ShipLogic.Editor
             DrawRangeData(_visibilityRadius, GetRangeForSelectedPropertyFloat, "Видимость радиуса:");
             DrawRangeData(_gunPower, GetRangeForSelectedPropertyFloat, "Мощность оружия:");
             DrawRangeData(_armor, GetRangeForSelectedPropertyFloat, "Броня:");
+            _isMiningShip.boolValue = EditorGUILayout.Toggle("Корабль добытчик:", _isMiningShip.boolValue);
 
             if (GUILayout.Button("Сохранить данные"))
             {

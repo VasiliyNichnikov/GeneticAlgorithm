@@ -18,7 +18,7 @@ namespace Planets
             _planet = planet;
         }
         
-        public void Clicked()
+        public void Clicked(Vector3 position)
         {
             // nothing
         }

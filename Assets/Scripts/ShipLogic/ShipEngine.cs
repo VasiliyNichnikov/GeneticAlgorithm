@@ -1,4 +1,4 @@
-﻿using FindingPath;
+﻿using Map;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -6,10 +6,12 @@ namespace ShipLogic
 {
     public interface IShipEngine
     {
+        bool HasPath { get; }
         bool IsStopped { get; }
         void SetTarget(Vector3 target, bool checkTarget = true);
         float TurnToTarget(Vector3 target);
         void Move();
+        void TryJumpToLastPoint();
 
 #if UNITY_EDITOR
         Vector3[] PathDebug { get; }
@@ -26,8 +28,7 @@ namespace ShipLogic
         private readonly float _rotationSpeed;
 
         #endregion
-
-        private readonly IFindingPath _findingPath;
+        
         private readonly Transform _shipTransform;
         private readonly NavMeshAgent _agent;
         private Vector3 _agentPosition;
@@ -55,6 +56,7 @@ namespace ShipLogic
             _rotationSpeed = rotationSpeed;
         }
 
+        public bool HasPath => _pathForMovement is { Length: > 0 };
         public bool IsStopped => _agent.enabled && _agent.isStopped;
 
         public void SetTarget(Vector3 target, bool checkTarget = true)
@@ -66,10 +68,10 @@ namespace ShipLogic
 
             _pathIteration = 1;
             _target = target;
-            _pathForMovement = TrafficMap.Map.TryToFindPath(_shipTransform.position, target, out var isFound);
+            _pathForMovement = SpaceMap.Map.TryToFindPath(_shipTransform.position, target, out var isFound);
             _agent.isStopped = false;
         }
-
+        
         public void Move()
         {
             SetAgentPosition();
@@ -114,6 +116,27 @@ namespace ShipLogic
                     }
                 }
             }
+        }
+
+        public void TryJumpToLastPoint()
+        {
+            if (_pathForMovement.Length == 0)
+            {
+                return;
+            }
+
+            if (_pathIteration >= _pathForMovement.Length)
+            {
+                _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+                _agent.isStopped = true;
+                return;
+            }
+
+            var endPosition = _pathForMovement[^1];
+  
+            _shipTransform.position = endPosition;
+            _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+            _agent.isStopped = true;
         }
 
         private void SetAgentPosition()

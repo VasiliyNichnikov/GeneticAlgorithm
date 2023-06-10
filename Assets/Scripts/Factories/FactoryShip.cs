@@ -1,16 +1,18 @@
-﻿using ShipLogic;
+﻿using System.Linq;
+using ShipLogic;
 using UnityEngine;
 
 namespace Factories
 {
     public class FactoryShip : MonoBehaviour
     {
-        [SerializeField] private ShipBase _shipPrefab;
+        [SerializeField] private ShipBase[] _shipsPrefab;
         [SerializeField] private Transform _parentShips;
 
-        public ShipBase CreateShip()
+        public ShipBase CreateShip(ShipType shipType)
         {
-            var newShip = Instantiate(_shipPrefab, _parentShips, false);
+            var prefab = _shipsPrefab.First(ship => ship.Type == shipType);
+            var newShip = Instantiate(prefab, _parentShips, false);
             return newShip;
         }
     }

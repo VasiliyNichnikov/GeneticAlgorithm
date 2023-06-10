@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using FindingPath;
+using Map;
 using ShipLogic;
 using UnityEngine;
 
@@ -8,38 +8,43 @@ namespace Pool
 {
     public class ShipPool
     {
-        public event Action<ShipBase> OnHideShip; 
+        public event Action<ShipBase> OnHideShip;
 
-        private readonly Queue<ShipBase> _cacheShips = new Queue<ShipBase>();
+        private readonly Dictionary<ShipType, Queue<ShipBase>> _cacheShips = new();
 
-        public ShipBase GetOrCreateShip()
+        public ShipBase GetOrCreateShip(ShipType ship)
         {
-            if (_cacheShips.Count == 0)
+            if (!_cacheShips.ContainsKey(ship) || _cacheShips[ship].Count == 0)
             {
-                var createdShip = Main.Instance.FactoryShip.CreateShip();
+                var createdShip = Main.Instance.FactoryShip.CreateShip(ship);
                 createdShip.Show();
                 createdShip.InitCache(() => AddShipOnCache(createdShip));
-                TrafficMap.Map.AddObjectOnMap(createdShip);
                 return createdShip;
             }
-
-            var cachedShip = _cacheShips.Dequeue();
-            cachedShip.Show();
-            TrafficMap.Map.AddObjectOnMap(cachedShip);
-            return cachedShip;
+            
+            var cacheShip = _cacheShips[ship].Dequeue();
+            cacheShip.Show();
+            return cacheShip;
         }
 
         private void AddShipOnCache(ShipBase ship)
         {
-            TrafficMap.Map.RemoveObjectOnMap(ship);
-            if (_cacheShips.Contains(ship))
+            if (!_cacheShips.ContainsKey(ship.Type))
             {
-                Debug.LogWarning("Ship is already in cache");
-                return;
+                _cacheShips[ship.Type] = new Queue<ShipBase>();
             }
-
+            else
+            {
+                if (_cacheShips[ship.Type].Contains(ship))
+                {
+                    Debug.LogWarning("Ship is already in cache");
+                    return;
+                }
+            }
+            
+            SpaceMap.Map.RemoveObjectOnMap(ship);
             OnHideShip?.Invoke(ship);
-            _cacheShips.Enqueue(ship);
+            _cacheShips[ship.Type].Enqueue(ship);
         }
     }
 }

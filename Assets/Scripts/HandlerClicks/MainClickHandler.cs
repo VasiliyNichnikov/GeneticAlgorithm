@@ -24,8 +24,8 @@ namespace HandlerClicks
                 return;
             }
             
-            var objToClick = GetObjectToClick();
-            objToClick?.Clicked();
+            var objToClick = GetObjectToClick(out var position);
+            objToClick?.Clicked(position);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace HandlerClicks
         /// </summary>
         private void CheckDirection()
         {
-            var objToClick = GetObjectToClick();
+            var objToClick = GetObjectToClick(out var position);
             if (_previewObjectToClick == null && objToClick != null)
             {
                 _previewObjectToClick = objToClick;
@@ -48,16 +48,18 @@ namespace HandlerClicks
         }
 
         [CanBeNull]
-        private IObjectToClick GetObjectToClick()
+        private IObjectToClick GetObjectToClick(out Vector3 hitPosition)
         {
             var ray = _camera.ScreenPointToRay(Input.mousePosition);
 
             if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, _mask))
             {
+                hitPosition = Vector3.zero;
                 return null;
             }
             
             var obj = hit.collider.gameObject;
+            hitPosition = hit.point;
             var objToClick = obj.GetComponent<IObjectToClick>();
             return objToClick;
         }

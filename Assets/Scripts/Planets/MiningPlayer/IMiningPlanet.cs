@@ -1,5 +1,5 @@
 ﻿using System;
-using FindingPath;
+using Map;
 using Players;
 using SpaceObjects;
 

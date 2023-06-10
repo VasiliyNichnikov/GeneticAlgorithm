@@ -1,42 +1,44 @@
 using System;
-using System.Linq;
-using FindingPath;
+using System.Collections.Generic;
 using HandlerClicks;
+using Map;
+using Planets;
 using Players;
 using SpaceObjects;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace ShipLogic
 {
-    public abstract class ShipBase : MonoBehaviour, IObjectToClick, ITargetToAttack, IDisposable, IObjectOnMap
+    public abstract class ShipBase : MonoBehaviour, IObjectToClick, IDetectedObject, IDisposable, IObjectOnMap, ITarget
     {
         public MapObjectType TypeObject => MapObjectType.Ship;
         public bool IsStatic { get; private set; }
-
-        public Vector3 WorldPosition => transform.position;
         public Vector3 LeftBottomPosition => transform.position;
         public Vector3 RightTopPosition => transform.position;
-        
+
         public DetectedObjectType ObjectType => DetectedObjectType.Ship;
-        public Vector3 Position => transform.position;
-        public float ShipRadius => _shipData.RadiusShip;
+        public Vector3 ObjectPosition => transform.position;
         protected float SpeedMovement { get; private set; }
         public PlayerType PlayerType { get; private set; }
         public bool IsDead => Health.IsDead;
 
+        public abstract float ThreatLevel { get; }
         public IShipHealth Health { get; private set; }
         public IShipEngine Engine { get; private set; }
-        public abstract IShipGun Gun { get; protected set; }
-
-        [SerializeField] protected ShipDetector Detector;
-
-        [SerializeField] private ShipSkinData[] _skins;
-
+        public IShipGun Gun { get; private set; }
+        public float Radius => Agent.radius;
         public ShipData CalculatedShipData => _calculatedShipData;
-
+        public abstract ShipType Type { get; }
         public string NameCurrentState => _commander == null ? "Not commander" : _commander.NameCurrentState;
 
-        private ShipSkinData _shipData;
+        protected abstract float MinAngleRotation { get; }
+        [SerializeField] private MeshRenderer Renderer;
+        [SerializeField] protected ShipDetector Detector;
+        [SerializeField] protected NavMeshAgent Agent;
+        [SerializeField] protected GunPoint[] GunPoints;
+        [SerializeField] protected ShipEffectsManager EffectsManager;
+
         private IShipCommander _commander;
         private bool _isInitialized;
         private ShipData _calculatedShipData;
@@ -48,20 +50,6 @@ namespace ShipLogic
         /// </summary>
         private const float PercentageOfArmorAbsorption = 45f;
 
-
-        private void Awake()
-        {
-            foreach (var skin in _skins)
-            {
-                if (skin == null)
-                {
-                    continue;
-                }
-
-                skin.gameObject.SetActive(false);
-            }
-        }
-
         public void Init(IBuilderShip builder)
         {
             if (_isInitialized)
@@ -69,17 +57,20 @@ namespace ShipLogic
                 Debug.LogError("Ship is already initialized");
                 return;
             }
-            
+
             InitSkin(builder.Data);
-            _commander = builder.Commander;
+            _commander = GetNewCommander();
 
             _isInitialized = true;
             PlayerType = builder.PlayerType;
-            Detector.Init(builder.PlayerType, _commander);
-            _shipData.EffectsManager.Init();
-            
+            Detector.Init(builder.PlayerType, this);
+
+            EffectsManager.Init();
             // Инициализация цвета
-            _shipData.SetMaterial(Main.Instance.MaterialStorage.GetMaterialForShip(PlayerType));
+            Renderer.material = Main.Instance.MaterialStorage.GetMaterialForShip(PlayerType);
+            
+            // Добавление корабля на карту
+            SpaceMap.Map.AddObjectOnMap(this);
         }
 
         public void InitCache(Action addShipInCache)
@@ -87,9 +78,38 @@ namespace ShipLogic
             _addShipInCache = addShipInCache;
         }
 
-        public abstract bool SeeOtherShip(ITargetToAttack ship);
 
-        public abstract bool CanAttackOtherShip(ITargetToAttack ship);
+        protected abstract IShipCommander GetNewCommander();
+
+        // Эта штука в совокупностью CanAttackOtherShip создают баги
+        public bool SeeOtherShipDistance(IDetectedObject ship)
+        {
+            return Vector3.Distance(ObjectPosition, ship.ObjectPosition) <= Detector.Radius;
+        }
+
+        public bool SeeSelectedPointAngle(Vector3 positionPoint)
+        {
+            var direction = positionPoint - ObjectPosition;
+            direction.y = 0.0f;
+            var angleRotation = Vector3.Angle(direction, transform.forward);
+            return angleRotation <= MinAngleRotation;
+        }
+        
+        public bool IsDistanceToAttack(IDetectedObject ship)
+        {
+            var distanceByShip = Vector3.Distance(ObjectPosition, ship.ObjectPosition);
+            return distanceByShip > Radius && distanceByShip <= Detector.Radius;
+        }
+
+        public Vector3 GetPointToApproximate()
+        {
+            return ObjectPosition;
+        }
+        
+        public abstract bool CanAttackOtherShip(IDetectedObject ship);
+
+
+        public abstract IReadOnlyCollection<Vector3> GetPointsInSector();
 
         public void Show()
         {
@@ -103,21 +123,21 @@ namespace ShipLogic
                 Debug.LogError("Commander is null");
                 return null;
             }
-            
+
             return _commander;
         }
 
         public void Hide()
         {
-            gameObject.SetActive(false);
             _isInitialized = false;
             _addShipInCache?.Invoke();
-            _shipData.gameObject.SetActive(false);
             TurnOffEngine();
-            Gun.FinishShoot();
+            Gun.Dispose();
             // При уничтожение корабля теряем командира
             _commander.Dispose();
             _commander = null;
+
+            gameObject.SetActive(false);
         }
 
         public void TurnOffEngine()
@@ -128,8 +148,8 @@ namespace ShipLogic
             }
 
             IsStatic = true;
-            _shipData.Agent.enabled = false;
-            _shipData.EffectsManager.TurnOffEngine();
+            Agent.enabled = false;
+            EffectsManager.TurnOffEngine();
         }
 
         public void TurnOnEngine()
@@ -138,10 +158,10 @@ namespace ShipLogic
             {
                 return;
             }
-            
+
             IsStatic = false;
-            _shipData.Agent.enabled = true;
-            _shipData.EffectsManager.TurnOnEngine();
+            Agent.enabled = true;
+            EffectsManager.TurnOnEngine();
         }
 
         public void DestroyShip()
@@ -151,7 +171,7 @@ namespace ShipLogic
                 return;
             }
 
-            _shipData.EffectsManager.DestroyShip();
+            EffectsManager.DestroyShip();
         }
 
         public void OnDestroy()
@@ -161,26 +181,11 @@ namespace ShipLogic
 
         public void Dispose()
         {
-            if (!_isInitialized)
-            {
-                return;
-            }
         }
 
         private void InitSkin(ShipData data)
         {
-            var shipData = _skins.FirstOrDefault(d => d.Skin == data.SkinType);
-            if (shipData == null)
-            {
-                Debug.LogError($"Not found skin with type: {data.SkinType}");
-                return;
-            }
-
             _calculatedShipData = data;
-            _shipData = shipData;
-            name = $"{name}_{_shipData.Skin.ToString()}";
-
-            shipData.gameObject.SetActive(true);
             Detector.SetRadius(data.VisibilityRadius);
             SpeedMovement = data.SpeedMovement;
 
@@ -192,15 +197,15 @@ namespace ShipLogic
             Health = new ShipHealth(minMaxHealth.minValue, minMaxHealth.maxValue, 0, data.Armor,
                 PercentageOfArmorAbsorption);
             // Инициализация двигателя
-            Engine = new ShipEngine(transform, _shipData.Agent, _calculatedShipData.SpeedMovement,
+            Engine = new ShipEngine(transform, Agent, _calculatedShipData.SpeedMovement,
                 _calculatedShipData.SpeedMovement);
             // Инициализация оружия
-            Gun = new ShipGun(this, _shipData.GunPoints, _calculatedShipData.RateOfFire, _calculatedShipData.GunPower);
+            Gun = new ShipGun(this, GunPoints, _calculatedShipData.RateOfFire, _calculatedShipData.GunPower);
         }
 
-        public void Clicked()
+        public void Clicked(Vector3 position)
         {
-            _clickHandler.Clicked();
+            _clickHandler.Clicked(position);
         }
 
         public void OnStartDrag()
@@ -218,20 +223,31 @@ namespace ShipLogic
 
         private void OnDrawGizmosSelected()
         {
-            if (_shipData == null || !_isInitialized)
+            if (!_isInitialized)
             {
                 return;
             }
-
-            Gizmos.color = new Color(1, 0, 0, 0.25f);
-            Gizmos.DrawSphere(transform.position, _shipData.RadiusShip);
-
-            if (_commander != null)
+            
+            if (_commander == null)
             {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(_commander.GetPointForMovement(), 1.5f);
+                return;
             }
+            
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(_commander.GetPointForMovement(), 1.5f);
 
+            Gizmos.color = new Color(1, 0, 0, 0.6f);
+            foreach (var enemy in _commander.GetFoundEnemies())
+            {
+                Gizmos.DrawSphere(enemy.ObjectPosition, enemy.Radius);
+            }
+            
+            Gizmos.color = new Color(0, 1, 0, 0.6f);
+            foreach (var ally in _commander.GetFoundAllies())
+            {
+                Gizmos.DrawSphere(ally.ObjectPosition, ally.Radius);
+            }
+            
             Gizmos.color = Color.blue;
             if (Engine?.PathDebug == null || Engine.PathDebug.Length == 0)
             {

@@ -2,6 +2,7 @@
 using System.Globalization;
 using HandlerClicks;
 using UI.Dialog.InfoAboutShip;
+using UnityEngine;
 
 namespace ShipLogic
 {
@@ -22,7 +23,7 @@ namespace ShipLogic
             _data = calculatedShipData;
         }
         
-        public void Clicked()
+        public void Clicked(Vector3 position)
         {
             var infoAboutShip = Main.Instance.DialogManager.GetDialog<InfoAboutShipDialog>();
 

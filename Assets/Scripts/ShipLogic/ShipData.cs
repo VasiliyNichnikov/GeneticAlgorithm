@@ -2,7 +2,7 @@
 {
     public struct ShipData
     {
-        public ShipSkinData.SkinType SkinType { get; private set; }
+        public ShipType ShipType { get; private set; }
         public float SpeedMovement { get; private set; }
         public float RateOfFire { get; private set; }
         public float VisibilityRadius { get; private set; }
@@ -14,14 +14,14 @@
             float visibilityRadius, 
             float gunPower,
             float armor,
-            ShipSkinData.SkinType skinType)
+            ShipType shipType)
         {
             SpeedMovement = speedMovement;
             RateOfFire = rateOfFire;
             VisibilityRadius = visibilityRadius;
             GunPower = gunPower;
             Armor = armor;
-            SkinType = skinType;
+            ShipType = shipType;
         }
     }
 }

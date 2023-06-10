@@ -13,11 +13,14 @@ namespace ShipLogic.Editor
         [SerializeField] private float _maxWeight;
 
         [SerializeField] private float _speedMovement;
+
         [SerializeField] private float _rateOfFire;
+
         // todo так как правила изменены, лучше сделать вариант с процентом поглощения
-        [SerializeField] private float _visibilityRadius; 
+        [SerializeField] private float _visibilityRadius;
         [SerializeField] private float _gunPower;
         [SerializeField] private float _armor;
+        [SerializeField] public bool _isMiningShip;
 
         public ShipData ConvertToShipData()
         {
@@ -55,26 +58,31 @@ namespace ShipLogic.Editor
         }
 
         // todo потом нужно будет вынести в какое-то место)
-        private ShipSkinData.SkinType GetSkinForShip()
+        private ShipType GetSkinForShip()
         {
-            var weights = new Dictionary<ShipSkinData.SkinType, float>()
+            if (_isMiningShip)
             {
-                { ShipSkinData.SkinType.Stealth, 0 },
-                { ShipSkinData.SkinType.Fighter, 0 },
-                { ShipSkinData.SkinType.HeavyShip, 0 }
+                return ShipType.Mining;
+            }
+            
+            var weights = new Dictionary<ShipType, float>()
+            {
+                { ShipType.Stealth, 0 },
+                { ShipType.Fighter, 0 },
+                { ShipType.AircraftCarrier, 0 }
             };
 
             // Настройка параметра скорости
             switch (_speedMovement)
             {
                 case >= 0.4f:
-                    weights[ShipSkinData.SkinType.Stealth] += 1;
+                    weights[ShipType.Stealth] += 1;
                     break;
                 case < 0.4f and >= 0.2f:
-                    weights[ShipSkinData.SkinType.Fighter] += 1;
+                    weights[ShipType.Fighter] += 1;
                     break;
                 default:
-                    weights[ShipSkinData.SkinType.HeavyShip] += 1;
+                    weights[ShipType.AircraftCarrier] += 1;
                     break;
             }
 
@@ -82,27 +90,27 @@ namespace ShipLogic.Editor
             switch (_visibilityRadius)
             {
                 case >= 0.4f:
-                    weights[ShipSkinData.SkinType.Stealth] += 1;
+                    weights[ShipType.Stealth] += 1;
                     break;
                 case < 0.4f and >= 0.2f:
-                    weights[ShipSkinData.SkinType.Fighter] += 1;
+                    weights[ShipType.Fighter] += 1;
                     break;
                 default:
-                    weights[ShipSkinData.SkinType.HeavyShip] += 1;
+                    weights[ShipType.AircraftCarrier] += 1;
                     break;
             }
-            
+
             // Настройка перезарядки снаряда
             switch (_rateOfFire)
             {
                 case >= 0.4f:
-                    weights[ShipSkinData.SkinType.HeavyShip] += 1;
+                    weights[ShipType.AircraftCarrier] += 1;
                     break;
                 case < 0.4f and >= 0.2f:
-                    weights[ShipSkinData.SkinType.Fighter] += 1;
+                    weights[ShipType.Fighter] += 1;
                     break;
                 default:
-                    weights[ShipSkinData.SkinType.Stealth] += 1;
+                    weights[ShipType.Stealth] += 1;
                     break;
             }
 
@@ -110,13 +118,13 @@ namespace ShipLogic.Editor
             switch (_gunPower)
             {
                 case >= 0.4f:
-                    weights[ShipSkinData.SkinType.HeavyShip] += 1;
+                    weights[ShipType.AircraftCarrier] += 1;
                     break;
                 case < 0.4f and >= 0.2f:
-                    weights[ShipSkinData.SkinType.Fighter] += 1;
+                    weights[ShipType.Fighter] += 1;
                     break;
                 default:
-                    weights[ShipSkinData.SkinType.Stealth] += 1;
+                    weights[ShipType.Stealth] += 1;
                     break;
             }
 
@@ -124,13 +132,13 @@ namespace ShipLogic.Editor
             switch (_armor)
             {
                 case >= 0.4f:
-                    weights[ShipSkinData.SkinType.HeavyShip] += 1;
+                    weights[ShipType.AircraftCarrier] += 1;
                     break;
                 case < 0.4f and >= 0.2f:
-                    weights[ShipSkinData.SkinType.Fighter] += 1;
+                    weights[ShipType.Fighter] += 1;
                     break;
                 default:
-                    weights[ShipSkinData.SkinType.Stealth] += 1;
+                    weights[ShipType.Stealth] += 1;
                     break;
             }
 
@@ -138,6 +146,5 @@ namespace ShipLogic.Editor
             var foundSkin = weights.FirstOrDefault(weight => Math.Abs(weight.Value - maxWeight) < 0.01f).Key;
             return foundSkin;
         }
-        
     }
 }

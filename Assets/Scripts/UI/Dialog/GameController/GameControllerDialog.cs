@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Map;
+using UnityEngine;
 
 namespace UI.Dialog.GameController
 {
@@ -8,9 +9,12 @@ namespace UI.Dialog.GameController
         [SerializeField] private int _minSpeedGame;
         [SerializeField] private int _maxSpeedGame;
 
+        [SerializeField] private GridVisibilitySettings _gridVisibility;
+
         private void Start()
         {
             _speedGame.Init(_minSpeedGame, _maxSpeedGame);
+            _gridVisibility.Init(SpaceMap.Map.GridViewing);
         }
     }
 }

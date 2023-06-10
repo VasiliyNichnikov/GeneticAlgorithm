@@ -8,8 +8,8 @@ namespace ShipLogic
         event Action<float> OnUpdateHealth;
         event Action<float> OnUpdateArmor;
         
-        float CurrentHealth { get; }
-        float CurrentArmor { get; }
+        float CurrentHealthPercentages { get; }
+        float CurrentArmorPercentages { get; }
         
         string HealthStats { get; }
         string ArmorStats { get; }
@@ -22,8 +22,8 @@ namespace ShipLogic
     {
         public event Action<float> OnUpdateHealth;
         public event Action<float> OnUpdateArmor;
-        public float CurrentHealth => _currentHealth;
-        public float CurrentArmor => _currentArmor;
+        public float CurrentHealthPercentages => (_currentHealth - _minHealth) / (_maxHealth - _minHealth);
+        public float CurrentArmorPercentages => (_currentArmor - _minArmor) / (_maxArmor - _minArmor);
         public string HealthStats => $"{_currentHealth}/{_maxHealth}";
         public string ArmorStats => $"{_currentArmor}/{_maxArmor}";
         public float MaxHealth => _maxHealth;

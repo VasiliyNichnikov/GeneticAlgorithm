@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+﻿using Planets;
 
 namespace Players
 {
     public interface IPlayerBrain
     {
-        Vector3 GetPointForMovement();
+        ITarget GetTargetForMovement();
     }
 }

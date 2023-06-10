@@ -49,7 +49,7 @@ namespace Planets.MiningPlayer
                 _timeLeftWithoutPercentage = _maximumTimeLeft;
                 _onGoldCollected = onGoldCollected;
                 _percentageMining = RecalculatePercentage();
-                
+
                 Main.Instance.OnUpdateGame += CustomUpdate;
             }
 
@@ -101,7 +101,8 @@ namespace Planets.MiningPlayer
                 if (currentPercentage >= 100)
                 {
                     currentPercentage = 99.9f / 100f;
-                }else if (currentPercentage == 0)
+                }
+                else if (currentPercentage == 0)
                 {
                     currentPercentage = 1;
                 }
@@ -126,8 +127,7 @@ namespace Planets.MiningPlayer
             return _playersMiningData[player].TimeLeft;
         }
 
-        private readonly Dictionary<PlayerType, MiningLogic> _playersMiningData =
-            new Dictionary<PlayerType, MiningLogic>();
+        private readonly Dictionary<PlayerType, MiningLogic> _playersMiningData = new ();
 
         public void AddShip(PlayerType player)
         {

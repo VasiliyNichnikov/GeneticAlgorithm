@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Loaders.Data;
 using UnityEngine;
 using Utils;
@@ -49,12 +48,6 @@ namespace Loaders
                 }
 
                 _parameters.Add(parameterType, parameterData.Value);
-            }
-            
-            foreach (var parameterObject in Enum.GetValues(typeof(ParameterType)))
-            {
-                var parameterType = (ParameterType)parameterObject;
-                
             }
         }
 

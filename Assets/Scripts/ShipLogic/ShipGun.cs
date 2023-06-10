@@ -1,11 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using SpaceObjects;
 using UnityEngine;
 
 namespace ShipLogic
 {
-    public interface IShipGun
+    public interface IShipGun : IDisposable
     {
-        void SetTarget(ITargetToAttack target);
+        bool AttackingSelectedTarget(IDetectedObject selectedTarget);
+        void SetTarget(IDetectedObject target);
         void StartShoot();
         void FinishShoot();
         void Shoot();
@@ -19,7 +22,7 @@ namespace ShipLogic
         
         private readonly MonoBehaviour _ship;
         private readonly GunPoint[] _gunpoints; // Точка вылета снаряда
-        private ITargetToAttack _target; // Объект, в который будем стрелять
+        private IDetectedObject _target; // Объект, в который будем стрелять
 
         private IEnumerator _rechargeCheck;
         private float _rechargeTime;
@@ -34,7 +37,12 @@ namespace ShipLogic
             DeactivateGunpoints();
         }
 
-        public void SetTarget(ITargetToAttack target)
+        public bool AttackingSelectedTarget(IDetectedObject selectedTarget)
+        {
+            return _target != null && _target.Equals(selectedTarget);
+        }
+
+        public void SetTarget(IDetectedObject target)
         {
             if (Equals(_target, target))
             {
@@ -66,6 +74,7 @@ namespace ShipLogic
 
         public void FinishShoot()
         {
+            _target = null;
             DeactivateGunpoints();
         }
 
@@ -112,6 +121,18 @@ namespace ShipLogic
                 return;
             }
             currentShip.Health.DealDamage(_damage);
+        }
+
+        public void Dispose()
+        {
+            FinishShoot();
+            if (_rechargeCheck != null)
+            {
+                _ship.StopCoroutine(_rechargeCheck);
+                _rechargeCheck = null;
+            }
+
+            _target = null;
         }
     }
 }

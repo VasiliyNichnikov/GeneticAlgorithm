@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using UI.Dialog.GameController;
+using UI.Dialog.InfoAboutGroup;
 using UI.Dialog.InfoAboutMiningPlanet;
 using UI.Dialog.InfoAboutPlayerPlanet;
 using UI.Dialog.InfoAboutShip;
@@ -19,7 +20,8 @@ namespace UI.Dialog
             { typeof(InfoAboutShipDialog), "Prefabs/UI/InfoAboutShip/InfoAboutShipDialog" },
             { typeof(InfoAboutMiningPlanetDialog), "Prefabs/UI/InfoAboutMiningPlanet/InfoAboutMiningPlanetDialog" },
             { typeof(InfoAboutPlayerPlanetDialog), "Prefabs/UI/InfoAboutPlayerPlanet/InfoAboutPlayerPlanetDialog" },
-            { typeof(GameControllerDialog), "Prefabs/UI/GameController/GameControllerDialog" }
+            { typeof(GameControllerDialog), "Prefabs/UI/GameController/GameControllerDialog" },
+            { typeof(ShipGroupView), "Prefabs/UI/InfoAboutGroup/ShipGroupView" }
         };
 
         [CanBeNull]

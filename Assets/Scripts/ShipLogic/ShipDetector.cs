@@ -15,12 +15,12 @@ namespace ShipLogic
         public float Radius => _collider.radius;
 
         private PlayerType _currentPlayer;
-        private IShipCommander _commander = null!;
+        private ShipBase _ship = null!;
 
-        public void Init(PlayerType playerType, IShipCommander commander)
+        public void Init(PlayerType playerType, ShipBase ship)
         {
             _currentPlayer = playerType;
-            _commander = commander;
+            _ship = ship;
         }
         
         public void SetRadius(float radius)
@@ -42,12 +42,7 @@ namespace ShipLogic
                 return;
             }
 
-            if (detectedShip.PlayerType == _currentPlayer)
-            {
-                return;
-            }
-            
-            _commander.AddFoundEnemy(detectedShip);
+            _ship.GetCommander().AddFoundEnemy(detectedShip);
         }
         
 
@@ -58,13 +53,8 @@ namespace ShipLogic
             {
                 return;
             }
-            
-            if (detectedShip.PlayerType == _currentPlayer)
-            {
-                return;
-            }
 
-            _commander.RemoveFoundEnemy(detectedShip);
+            _ship.GetCommander().RemoveFoundEnemy(detectedShip);
         }
     }
 }

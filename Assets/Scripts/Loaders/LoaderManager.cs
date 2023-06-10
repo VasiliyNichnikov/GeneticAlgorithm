@@ -7,9 +7,27 @@ namespace Loaders
 {
     public class LoaderManager : ILoaderManager
     {
-        private readonly Dictionary<Type, ILoader> _uploaded = new Dictionary<Type, ILoader>();
+        private readonly Dictionary<Type, ILoader> _uploaded = new();
 
-        private readonly Queue<ILoader> _unloadedData = new Queue<ILoader>();
+        private readonly Queue<ILoader> _unloadedData = new();
+        private readonly MonoBehaviour _mainBehaviour;
+
+        public void GetAsync<T>(Action<T> onComplete, bool unload) where T : ILoader
+        {
+            _mainBehaviour.StartCoroutine(LoadData(onComplete, unload));
+        }
+
+        private IEnumerator LoadData<T>(Action<T> onComplete, bool unload) where T : ILoader
+        {
+            var loadedData = Get<T>(unload);
+            while (loadedData == null)
+            {
+                loadedData = Get<T>(unload);
+                yield return null;
+            }
+            
+            onComplete?.Invoke(loadedData);
+        }
 
         public T Get<T>(bool unload) where T : ILoader
         {
@@ -29,7 +47,8 @@ namespace Loaders
 
         public LoaderManager(MonoBehaviour mainBehaviour)
         {
-            mainBehaviour.StartCoroutine(CheckData());
+            _mainBehaviour = mainBehaviour;
+            _mainBehaviour.StartCoroutine(CheckData());
         }
 
         public void AddLoaderInQueue(ILoader loader)
@@ -56,7 +75,7 @@ namespace Loaders
                 yield return CheckUnloadedData();
             }
         }
-        
+
         private IEnumerator CheckUnloadedData()
         {
             while (_unloadedData.Count > 0)
