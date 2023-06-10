@@ -14,15 +14,14 @@ namespace Map
 
         // Двигаем не статичные объекты (В нашем случае корабли)
         public event Action OnMoveNonStaticObjects;
-
         [SerializeField] private HeatMapVisual _heatMapVisualPrefab;
         [SerializeField] private GridSettings _gridSettings;
 
         private readonly List<IObjectOnMap> _objectsOnMap = new();
         private readonly ShipsOnMap _shipsOnMap = new ();
         
-        private Grid _gridForMovement;
-        private Grid _gridForSector;
+        private GridInt _gridForMovement;
+        private GridSector _gridForSector;
 
 
         public static SpaceMap Map { get; private set; }
@@ -75,8 +74,7 @@ namespace Map
             {
                 _gridForMovement.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
                     (int)objectOnMap.TypeObject);
-                _gridForSector.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
-                    (int)objectOnMap.TypeObject);
+                _gridForSector.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition, new Sector()); // todo доделать
             }
         }
 
@@ -92,6 +90,7 @@ namespace Map
                 _shipsOnMap.RemoveShip(ship);
             }
 
+            _gridForMovement.SetValue(objectOnMap.ObjectPosition, (int)MapObjectType.Empty);
             _objectsOnMap.Remove(objectOnMap);
         }
 
@@ -164,8 +163,7 @@ namespace Map
 
                 _gridForMovement.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
                     (int)objectOnMap.TypeObject);
-                _gridForSector.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
-                    (int)objectOnMap.TypeObject);
+                _gridForSector.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition, new Sector()); //  (int)objectOnMap.TypeObject
             }
         }
 
@@ -360,9 +358,9 @@ namespace Map
         }
 
         private (int x, int z) DiffBetweenMovementAndSector() =>
-            DifferenceBetweenGrids(_gridForMovement, _gridForSector);
+            DifferenceBetweenGrids(_gridSettings.GridWrapperForMovement, _gridSettings.GridWrapperForSector);
 
-        private (int x, int z) DifferenceBetweenGrids(Grid one, Grid two)
+        private (int x, int z) DifferenceBetweenGrids(GridWrapper one, GridWrapper two)
         {
             var diffX = one.GetWidth() > two.GetWidth()
                 ? Mathf.RoundToInt(one.GetWidth() / two.GetWidth())

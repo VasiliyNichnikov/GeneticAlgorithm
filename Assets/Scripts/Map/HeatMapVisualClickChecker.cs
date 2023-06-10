@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace Map
 {
-    public class HeatMapVisualClickChecker : MonoBehaviour, IDisposable, IObjectToClick
+    public class HeatMapVisualClickChecker : MonoBehaviour, IDisposable
     {
-        private Grid _grid;
+        private GridInt _grid;
 
-        public void Init(Grid gridForClicks)
+        public void Init(GridInt gridForClicks)
         {
             _grid = gridForClicks;
         }

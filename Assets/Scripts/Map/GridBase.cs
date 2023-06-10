@@ -5,29 +5,26 @@ using Utils;
 
 namespace Map
 {
-    public class Grid
+    public abstract class GridBase<T> where T: struct 
     {
-        public const int HeatMapMaxValue = 100;
-        public const int HeatMapMinValue = 0;
-        
         private readonly int _width;
         private readonly int _length;
         private readonly float _cellSize;
         private readonly Vector3 _originPosition;
-        private readonly int[,] _gridArray;
+        private readonly T[,] _gridArray;
         private readonly TextMesh[,] _debugTextArray;
         private readonly bool _isDebugMode;
 
-        public event Action<(int x, int z)> OnChangeCellValue; 
+        public event Action<(int x, int z)> OnChangeCellValue;
 
-        public Grid(int width, int length, float cellSize, Vector3 originPosition, Transform parent=null, bool isDebug=false)
+        protected GridBase(int width, int length, float cellSize, Vector3 originPosition, Transform parent=null, bool isDebug=false)
         {
             _width = width;
             _cellSize = cellSize;
             _length = length;
             _originPosition = originPosition;
 
-            _gridArray = new int[_width, _length];
+            _gridArray = new T[_width, _length];
             _debugTextArray = new TextMesh[_width, _length];
             _isDebugMode = isDebug;
             
@@ -66,7 +63,7 @@ namespace Map
         {
             return _cellSize;
         }
-        
+
         public Vector3 GetWorldPosition(int x, int z)
         {
             return new Vector3(x, 0, z) * _cellSize + _originPosition;
@@ -78,12 +75,12 @@ namespace Map
             return cellWorldPosition + new Vector3(1, 0, 1) * _cellSize * 0.5f;
         }
 
-        public Vector3 GetWorldPosition(Vector3Int gridPosition)
+        private Vector3 GetWorldPosition(Vector3Int gridPosition)
         {
             return GetWorldPosition(gridPosition.x, gridPosition.z);
         }
 
-        private void GetXZ(Vector3 worldPosition, out int x, out int z)
+        public void GetXZ(Vector3 worldPosition, out int x, out int z)
         {
             x = Mathf.FloorToInt((worldPosition - _originPosition).x / _cellSize);
             z = Mathf.FloorToInt((worldPosition - _originPosition).z / _cellSize);
@@ -94,12 +91,13 @@ namespace Map
             GetXZ(worldPosition, out var x, out var z);
             return new Vector3Int(x, 0, z);
         }
-        
-        public void SetValue(int x, int z, int value)
+
+        protected void SetValue(int x, int z, T value)
         {
             if (x >= 0 && z >= 0 && x < _width && z < _length)
             {
-                _gridArray[x, z] = Mathf.Clamp(value, HeatMapMinValue, HeatMapMaxValue);
+                // _gridArray[x, z] = Mathf.Clamp(value, HeatMapMinValue, HeatMapMaxValue);
+                _gridArray[x, z] = value;
                 if (_isDebugMode)
                 {
                     _debugTextArray[x, z].text = value.ToString();
@@ -108,100 +106,28 @@ namespace Map
             }
         }
 
-        public void SetValue(Vector3 worldPosition, int value)
+        public void SetValue(Vector3 worldPosition, T value)
         {
             GetXZ(worldPosition,out var x, out var z);
             SetValue(x, z, value);
         }
 
-        public int GetValue(int x, int z)
+        public abstract int GetValueInt(int x, int z);
+        
+        public T GetValue(int x, int z)
         {
             if (x >= 0 && z >= 0 && x < _width && z < _length)
             {
                 return _gridArray[x, z];
             }
 
-            return -1;
-        }
-
-        public int GetValue(Vector3 worldPosition)
-        {
-            GetXZ(worldPosition,out var x, out var z);
-            return GetValue(x, z);
-        }
-
-        public Vector3[] GetEmptyPointsAroundSelectedObject(Vector3 worldPosition, int emptyValue, int range)
-        {
-            void CheckAndAddPointOnList(int x, int z, List<Vector3> points)
-            {
-                var value = GetValue(x, z);
-                if (value == emptyValue)
-                {
-                    var pointWorldPosition = GetWorldPositionCenterCell(new Vector3Int(x, 0, z));
-                    points.Add(pointWorldPosition);
-                }
-            }
-            var result = new List<Vector3>();
-            
-            GetXZ(worldPosition, out var originX, out var originZ);
-            for (var x = 0; x < range; x++)
-            {
-                for (var z = 0; z < range - x; z++)
-                {
-                    CheckAndAddPointOnList(originX + x, originZ + z, result);
-                    if (x != 0)
-                    {
-                        CheckAndAddPointOnList(originX - x, originZ + z, result);
-                    }
-
-                    if (z != 0)
-                    {
-                        CheckAndAddPointOnList(originX + x, originZ - z, result);
-                        if (x != 0)
-                        {
-                            CheckAndAddPointOnList(originX - x, originZ - z, result);
-                        }
-                    }
-                }
-            }
-
-            return result.ToArray();
+            return default(T);
         }
         
-        public void AddValue(Vector3 worldPosition, int value, int range)
-        {
-            GetXZ(worldPosition, out var originX, out var originZ);
-            for (var x = 0; x < range; x++)
-            {
-                for (var z = 0; z < range - x; z++)
-                {
-                    AddValue(originX + x, originZ + z, value);
-                    if (x != 0)
-                    {
-                        AddValue(originX - x, originZ + z, value);
-                    }
-
-                    if (z != 0)
-                    {
-                        AddValue(originX + x, originZ - z, value);
-                        if (x != 0)
-                        {
-                            AddValue(originX - x, originZ - z, value);
-                        }
-                    }
-                }
-            }
-        }
-        
-        private void AddValue(int x, int z, int value)
-        {
-            SetValue(x, z, GetValue(x, z) + value);
-        }
-
         /// <summary>
         /// Выделяем все ячейки в выбранном периметре
         /// </summary>
-        public void SetValuesAroundPerimeter(Vector3 pointOne, Vector3 pointTwo, int value)
+        protected void SetValuesAroundPerimeter(Vector3 pointOne, Vector3 pointTwo, T value, Func<T, bool> additionalCheck)
         {
             var pointOneLocal = GetXZ(pointOne);
             var pointTwoLocal = GetXZ(pointTwo);
@@ -213,11 +139,10 @@ namespace Map
                 for (var z = points.leftBottom.z; z <= points.rightTop.z; z++)
                 {
                     var currentValue = GetValue(x, z);
-                    if (currentValue != (int)MapObjectType.Empty && value != (int)MapObjectType.Empty)
+                    if (additionalCheck(currentValue))
                     {
-                        continue;
+                        SetValue(x, z, value);
                     }
-                    SetValue(x, z, value);
                 }
             }
         }
@@ -240,21 +165,7 @@ namespace Map
 
             return positionsOnGrid;
         }
-
-        public IReadOnlyCollection<Vector3> GetPositionsAroundOfSelectedPoint(Vector3 center, int positionCount)
-        {
-            var result = new List<Vector3>();
-            for (var i = 0; i < positionCount; i++)
-            {
-                var angle = i * (360f / positionCount);
-                var directory = Quaternion.Euler(0, angle, 0) * new Vector3(1, 0);
-                var position = center + directory * _cellSize;
-                result.Add(position);
-            }
-
-            return result;
-        }
-
+        
         private (Vector3Int leftBottom, Vector3Int rightTop) GetRightTopAndLeftBottom(Vector3Int pointOne, Vector3Int pointTwo)
         {
             const int y = 0;
@@ -284,6 +195,12 @@ namespace Map
             }
 
             return (new Vector3Int(startX, y, startZ), new Vector3Int(endX, y, endZ));
+        }
+
+        public T GetValue(Vector3 worldPosition)
+        {
+            GetXZ(worldPosition,out var x, out var z);
+            return GetValue(x, z);
         }
     }
 }

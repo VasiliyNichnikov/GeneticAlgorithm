@@ -25,7 +25,7 @@ namespace UI.Dialog.GameController
         {
             CreateParameterForMovement();
             CreateParameterForSector();
-            CreateParameterForDebug();
+            // CreateParameterForDebug();
         }
 
         private void CreateParameterForMovement()
