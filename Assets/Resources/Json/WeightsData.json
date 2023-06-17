@@ -1,0 +1,107 @@
+﻿{
+  "Comment": "Файл содержит информацию о весах. Вес зависит от типа объекта",
+  "MinWeight": 0,
+  "MaxWeight": 1,
+  "WeightShips": [
+    {
+      "ShipType": "Stealth",
+      "Weights": [
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Stealth",
+          "Weight": 0.01
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Fighter",
+          "Weight": 0.05
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "AircraftCarrier",
+          "Weight": 0.07
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Mining",
+          "Weight": 0.1
+        }
+      ]
+    },
+    {
+      "ShipType": "Fighter",
+      "Weights": [
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Stealth",
+          "Weight": 0.01
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Fighter",
+          "Weight": 0.05
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "AircraftCarrier",
+          "Weight": 0.07
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Mining",
+          "Weight": 0.1
+        }
+      ]
+    },
+    {
+      "ShipType": "AircraftCarrier",
+      "Weights": [
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Stealth",
+          "Weight": 0.01
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Fighter",
+          "Weight": 0.05
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "AircraftCarrier",
+          "Weight": 0.07
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Mining",
+          "Weight": 0.1
+        }
+      ]
+    },
+    {
+      "ShipType": "Mining",
+      "Weights": [
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Stealth",
+          "Weight": 0.05
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Fighter",
+          "Weight": 0.2
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "AircraftCarrier",
+          "Weight": 0.2
+        },
+        {
+          "MapObjectType": "Ship",
+          "ShipType": "Mining",
+          "Weight": 0.05
+        }
+      ]
+    }
+  ]
+}

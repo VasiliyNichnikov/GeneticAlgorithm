@@ -10,7 +10,7 @@ namespace ShipLogic.AircraftCarrier
         public override float ThreatLevel => 1.0f;
         public override ShipType Type => ShipType.AircraftCarrier;
 
-        protected override IShipCommander GetNewCommander()
+        protected override ICommanderCommander GetNewCommander()
         {
             return new AircraftCarrierCommander(this);
         }

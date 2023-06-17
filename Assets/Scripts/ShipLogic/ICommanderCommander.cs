@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ShipLogic
 {
-    public interface IShipCommander : IShipInfo, IDisposable
+    public interface ICommanderCommander : ICommanderInfo, IDisposable
     {
         StateBase Idle { get; }
         StateBase Attack { get; }

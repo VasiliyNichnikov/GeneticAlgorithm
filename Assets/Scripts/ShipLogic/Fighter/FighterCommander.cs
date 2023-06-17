@@ -10,9 +10,12 @@ using PreparingForAttackFighterState = ShipLogic.MainStates.PreparingForAttackSt
 namespace ShipLogic.Fighter
 {
     // ISupportedGroup - должен быть на корабле конкретного типа, а не у коммандер
+    // Очень не нравится что именно командер в группе, хотя может это более логично
+    // так как корабль это просто машина, а вот уже благодаря командирам эта машина получает команды и логику поведения
     public class FighterCommander : CommanderBase, ISupportedGroup
     {
-        public Vector3 ObjectPosition => Ship.ObjectPosition;
+        public Vector3 ObjectPosition => PositionShip;
+        
         public override StateBase Idle { get; protected set; }
         public override StateBase Attack { get; protected set; }
         public override StateBase Movement { get; protected set; }

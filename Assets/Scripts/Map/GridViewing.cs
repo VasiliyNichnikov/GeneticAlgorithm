@@ -1,4 +1,5 @@
 ﻿using System;
+using Players;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -40,44 +41,34 @@ namespace Map
             _previewActiveGrid = _settings.GridWrapperForMovement;
         }
 
-        public void SelectGridToDisplayForSector()
+        public void SelectedGridToDisplayForSectorPlayer1()
+        {
+            SelectedGridToDisplayForSector(PlayerType.Player1);
+        }
+        
+        public void SelectedGridToDisplayForSectorPlayer2()
+        {
+            SelectedGridToDisplayForSector(PlayerType.Player2);
+        }
+        
+        private void SelectedGridToDisplayForSector(PlayerType player)
         {
             CheckHeatMapVisual();
             CheckPreviewActiveGrid();
 
-            if (_settings.GridForSector == null)
+            var grid = _settings.GetGridWrapperPlayerForSector(player);
+            if (!grid.HasGridSector)
             {
                 Debug.LogError("Grid for sector is null");
                 return;
             }
             
-            _settings.GridForSector.OnChangeCellValue += UpdateVisualGrid;
-
-            _createdHeatMapVisual.SetGrid(_settings.GridWrapperForSector);
+            grid.GridPlayerSector.OnChangeCellValue += UpdateVisualGrid;
+            
+            _createdHeatMapVisual.SetGrid(grid);
             _createdHeatMapVisual.UpdateHeatMapVisual(true);
-
-            _previewActiveGrid = _settings.GridWrapperForSector;
-        }
-
-        public void SelectGridToDisplayForClick()
-        {
-            // CheckHeatMapVisual();
-            // CheckPreviewActiveGrid();
-            //
-            // if (_settings.GridForClick == null)
-            // {
-            //     Debug.LogError("Grid for visual is null");
-            //     return;
-            // }
-            //
-            // _settings.GridForClick.OnChangeCellValue += UpdateVisualGrid;
-            //
-            // var checkerClicks = _createdHeatMapVisual.GetComponent<HeatMapVisualClickChecker>();
-            // _createdHeatMapVisual.SetGrid(_settings.GridForClick);
-            // _createdHeatMapVisual.UpdateHeatMapVisual(true);
-            // checkerClicks.Init(_settings.GridForClick);
-            //
-            // _previewActiveGrid = _settings.GridForClick;
+            
+            _previewActiveGrid = grid;
         }
 
         public void ChangeVisibilityHeatMapVisual(bool state)
@@ -102,13 +93,13 @@ namespace Map
         {
             if (_previewActiveGrid.HasGridInt)
             {
-                _previewActiveGrid.GridInt.OnChangeCellValue -= UpdateVisualGrid;
+                _previewActiveGrid.GridInt!.OnChangeCellValue -= UpdateVisualGrid;
                 return;
             }
             
             if (_previewActiveGrid.HasGridSector)
             {
-                _previewActiveGrid.GridSector.OnChangeCellValue -= UpdateVisualGrid;
+                _previewActiveGrid.GridPlayerSector!.OnChangeCellValue -= UpdateVisualGrid;
                 return;
             }
         }

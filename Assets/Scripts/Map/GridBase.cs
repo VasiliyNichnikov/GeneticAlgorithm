@@ -5,15 +5,19 @@ using Utils;
 
 namespace Map
 {
-    public abstract class GridBase<T> where T: struct 
+    public abstract class GridBase<T>
     {
+        public const int HeatMapMaxValue = 100;
+        public const int HeatMapMinValue = 0;
+        
         private readonly int _width;
         private readonly int _length;
         private readonly float _cellSize;
         private readonly Vector3 _originPosition;
-        private readonly T[,] _gridArray;
-        private readonly TextMesh[,] _debugTextArray;
-        private readonly bool _isDebugMode;
+        
+        protected readonly TextMesh[,] DebugTextArray;
+        protected readonly bool IsDebugMode;
+        protected readonly T[,] GridArray;
 
         public event Action<(int x, int z)> OnChangeCellValue;
 
@@ -24,18 +28,18 @@ namespace Map
             _length = length;
             _originPosition = originPosition;
 
-            _gridArray = new T[_width, _length];
-            _debugTextArray = new TextMesh[_width, _length];
-            _isDebugMode = isDebug;
+            GridArray = new T[_width, _length];
+            DebugTextArray = new TextMesh[_width, _length];
+            IsDebugMode = isDebug;
             
             if (isDebug)
             {
-                for (var x = 0; x < _gridArray.GetLength(0); x++)
+                for (var x = 0; x < GridArray.GetLength(0); x++)
                 {
-                    for (var z = 0; z < _gridArray.GetLength(1); z++)
+                    for (var z = 0; z < GridArray.GetLength(1); z++)
                     {
                         var textPosition = GetWorldPosition(x, z) + new Vector3(_cellSize, 0, _cellSize) * 0.5f;
-                        _debugTextArray[x, z] = TextMeshUtils.CreateWorldText(_gridArray[x, z].ToString(),
+                        DebugTextArray[x, z] = TextMeshUtils.CreateWorldText(GridArray[x, z].ToString(),
                             parent, 
                             textPosition,
                             20, Color.
@@ -92,19 +96,12 @@ namespace Map
             return new Vector3Int(x, 0, z);
         }
 
-        protected void SetValue(int x, int z, T value)
+        protected bool CanAddValue(int x, int z, T value)
         {
-            if (x >= 0 && z >= 0 && x < _width && z < _length)
-            {
-                // _gridArray[x, z] = Mathf.Clamp(value, HeatMapMinValue, HeatMapMaxValue);
-                _gridArray[x, z] = value;
-                if (_isDebugMode)
-                {
-                    _debugTextArray[x, z].text = value.ToString();
-                }
-                OnChangeCellValue?.Invoke((x, z));
-            }
+            return x >= 0 && z >= 0 && x < _width && z < _length;
         }
+
+        protected abstract void SetValue(int x, int z, T value);
 
         public void SetValue(Vector3 worldPosition, T value)
         {
@@ -112,13 +109,18 @@ namespace Map
             SetValue(x, z, value);
         }
 
-        public abstract int GetValueInt(int x, int z);
+        public void SetValue(Vector3Int gridPosition, T value)
+        {
+            SetValue(gridPosition.x, gridPosition.z, value);
+        }
+
+        public abstract float GetValueFloat(int x, int z);
         
         public T GetValue(int x, int z)
         {
             if (x >= 0 && z >= 0 && x < _width && z < _length)
             {
-                return _gridArray[x, z];
+                return GridArray[x, z];
             }
 
             return default(T);
@@ -164,6 +166,11 @@ namespace Map
             }
 
             return positionsOnGrid;
+        }
+
+        protected void CallOnChangeCellValue(int x, int z)
+        {
+            OnChangeCellValue?.Invoke((x, z));
         }
         
         private (Vector3Int leftBottom, Vector3Int rightTop) GetRightTopAndLeftBottom(Vector3Int pointOne, Vector3Int pointTwo)

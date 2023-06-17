@@ -59,7 +59,7 @@ namespace ShipLogic.Strategy.Attack
             }
 
             _logicBase.SelectedEnemy = firstEnemy;
-            _logicBase.Commander.SetPointForMovementToEnemy(_logicBase.SelectedEnemy);
+            _logicBase.CommanderCommander.SetPointForMovementToEnemy(_logicBase.SelectedEnemy);
         }
 
         public void Dispose()

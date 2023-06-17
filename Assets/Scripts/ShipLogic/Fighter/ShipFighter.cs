@@ -11,7 +11,7 @@ namespace ShipLogic.Fighter
         public override float ThreatLevel => 0.5f;
         public override ShipType Type => ShipType.Fighter;
         
-        protected override IShipCommander GetNewCommander()
+        protected override ICommanderCommander GetNewCommander()
         {
             if (Main.Instance.IsDebugMode)
             {

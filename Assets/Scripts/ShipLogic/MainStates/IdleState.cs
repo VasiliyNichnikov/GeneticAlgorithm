@@ -10,33 +10,33 @@ namespace ShipLogic.MainStates
     public class IdleState : StateBase
     {
         public override string NameState => "Idle";
-        private readonly IShipCommander _commander;
+        private readonly ICommanderCommander _commanderCommander;
 
 
-        public IdleState(StateMachine machine, IShipCommander commander) : base(machine)
+        public IdleState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
         {
-            _commander = commander;
+            _commanderCommander = commanderCommander;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _commander.TurnOffEngine();
+            _commanderCommander.TurnOffEngine();
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
 
-            if (_commander.HasEnemy && _commander.SeeOtherEnemyShip())
+            if (_commanderCommander.HasEnemy && _commanderCommander.SeeOtherEnemyShip())
             {
-                Machine.ChangeState(_commander.PrepareAttack);
+                Machine.ChangeState(_commanderCommander.PrepareAttack);
                 return;
             }
 
-            if (_commander.HasPointForMovement)
+            if (_commanderCommander.HasPointForMovement)
             {
-                Machine.ChangeState(_commander.Movement);
+                Machine.ChangeState(_commanderCommander.Movement);
             }
         }
     }

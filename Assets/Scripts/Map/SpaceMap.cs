@@ -4,6 +4,7 @@ using System.Linq;
 using Players;
 using ShipLogic;
 using UnityEngine;
+using Utils;
 using Random = UnityEngine.Random;
 
 namespace Map
@@ -21,10 +22,9 @@ namespace Map
         private readonly ShipsOnMap _shipsOnMap = new ();
         
         private GridInt _gridForMovement;
-        private GridSector _gridForSector;
-
-
+        
         public static SpaceMap Map { get; private set; }
+        private SectorHandler _sectorHandler;
 
         private void Awake()
         {
@@ -34,9 +34,9 @@ namespace Map
 
         private void Init()
         {
+            _sectorHandler = new SectorHandler(_gridSettings);
+            
             _gridForMovement = _gridSettings.GridForMovement;
-            _gridForSector = _gridSettings.GridForSector;
-
             GridViewing = new GridViewing(_gridSettings, transform, _heatMapVisualPrefab);
         }
 
@@ -53,6 +53,9 @@ namespace Map
 
             // Отрисовываем заново все движущиеся объекты
             DrawNotStaticObjectOnGrid();
+            
+            // Пересчитываем веса
+            _sectorHandler.CheckAndUpdateWeightsInSectors();
         }
 
 
@@ -74,7 +77,6 @@ namespace Map
             {
                 _gridForMovement.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
                     (int)objectOnMap.TypeObject);
-                _gridForSector.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition, new Sector()); // todo доделать
             }
         }
 
@@ -136,7 +138,7 @@ namespace Map
             return randomPoints.Select(index => emptyPoints[index]);
         }
 
-        public IEnumerable<IShipInfo> GetAlliedShipsOnMap(PlayerType player)
+        public IEnumerable<ICommanderInfo> GetAlliedShipsOnMap(PlayerType player)
         {
             return _shipsOnMap.GetAlliedShipsOnMap(player);
         }
@@ -163,7 +165,6 @@ namespace Map
 
                 _gridForMovement.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition,
                     (int)objectOnMap.TypeObject);
-                _gridForSector.SetValuesAroundPerimeter(objectOnMap.RightTopPosition, objectOnMap.LeftBottomPosition, new Sector()); //  (int)objectOnMap.TypeObject
             }
         }
 
@@ -271,6 +272,12 @@ namespace Map
             return selectedNode ?? reachable[0];
         }
 
+        public (int x, int z) GetIndexSectorForObjectOnMap(IPosition positionObject)
+        {
+            _gridSettings.GetGridPlayerForSector(PlayerType.Player1)!.GetXZ(positionObject.ObjectPosition, out var x, out var z);
+            return (x, z);
+        }
+
 
         private IEnumerable<Node> GetAdjacentNodes(Vector3Int point, Vector3Int endGridPosition, List<Node> explored)
         {
@@ -318,8 +325,7 @@ namespace Map
         {
             var result = new List<Vector3>();
 
-            var sectors =
-                _gridForSector.GetPositionsOfCellsAroundPerimeter(
+            var sectors = _gridSettings.GetGridPlayerForSector(PlayerType.Player1)!.GetPositionsOfCellsAroundPerimeter(
                     objectOnMap.RightTopPosition,
                     objectOnMap.LeftBottomPosition);
 
@@ -358,7 +364,7 @@ namespace Map
         }
 
         private (int x, int z) DiffBetweenMovementAndSector() =>
-            DifferenceBetweenGrids(_gridSettings.GridWrapperForMovement, _gridSettings.GridWrapperForSector);
+            DifferenceBetweenGrids(_gridSettings.GridWrapperForMovement, _gridSettings.GetGridWrapperPlayerForSector(PlayerType.Player1));
 
         private (int x, int z) DifferenceBetweenGrids(GridWrapper one, GridWrapper two)
         {

@@ -6,12 +6,12 @@ namespace CommandsShip
 {
     public class MovementCommand : ICommandLogic
     {
-        private readonly IShipCommander _commander;
+        private readonly ICommanderCommander _commanderCommander;
 
 
-        public MovementCommand(IShipCommander commander)
+        public MovementCommand(ICommanderCommander commanderCommander)
         {
-            _commander = commander;
+            _commanderCommander = commanderCommander;
         }
         
         public void ExecuteRequest(Command command)
@@ -22,7 +22,7 @@ namespace CommandsShip
                 return;
             }
             
-            _commander.SetPointForMovement(command.Target);
+            _commanderCommander.SetPointForMovement(command.Target);
         }
     }
 }

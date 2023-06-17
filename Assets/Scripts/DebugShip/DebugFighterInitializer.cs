@@ -28,7 +28,7 @@ namespace DebugShip
         [SerializeField] private ShipStealth[] _shipStealths;
         [SerializeField] private ShipCharacteristics _characteristics;
         [SerializeField] private Transform _pointForMovement;
-        private IShipCommander _commander;
+        private ICommanderCommander _commanderCommander;
 
         private void Start()
         {

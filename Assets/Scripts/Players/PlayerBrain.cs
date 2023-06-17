@@ -65,19 +65,19 @@ namespace Players
             }
         }
 
-        private void GiveCommandToMoveToMiningPlanet(IShipInfo shipInfo)
+        private void GiveCommandToMoveToMiningPlanet(ICommanderInfo commanderInfo)
         {
-            shipInfo.ExecuteCommand(Command.Movement(_miningPlanets[0]));
+            commanderInfo.ExecuteCommand(Command.Movement(_miningPlanets[0]));
         }
 
-        private void GiveCommandHelp(IShipInfo shipInfo)
+        private void GiveCommandHelp(ICommanderInfo commanderInfo)
         {
-            shipInfo.ExecuteCommand(Command.Help(_player, shipInfo.ShipTarget));
+            commanderInfo.ExecuteCommand(Command.Help(_player, commanderInfo.ShipTarget));
         }
 
-        private void GiveCommandEscape(IShipInfo shipInfo)
+        private void GiveCommandEscape(ICommanderInfo commanderInfo)
         {
-            shipInfo.ExecuteCommand(Command.EscapeFromBattle(_player));
+            commanderInfo.ExecuteCommand(Command.EscapeFromBattle(_player));
         }
 
         public void Dispose()

@@ -12,7 +12,7 @@ namespace Loaders
         private readonly Queue<ILoader> _unloadedData = new();
         private readonly MonoBehaviour _mainBehaviour;
 
-        public void GetAsync<T>(Action<T> onComplete, bool unload) where T : ILoader
+        public void LoadAsync<T>(Action<T> onComplete, bool unload) where T : ILoader
         {
             _mainBehaviour.StartCoroutine(LoadData(onComplete, unload));
         }

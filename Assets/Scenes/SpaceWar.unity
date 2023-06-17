@@ -782,9 +782,9 @@ MonoBehaviour:
     _cellSize: 100
     _originPosition: {x: -200, y: 0, z: -200}
   - _type: 2
-    _weight: 20
-    _length: 20
-    _cellSize: 20
+    _weight: 4
+    _length: 4
+    _cellSize: 100
     _originPosition: {x: -200, y: 0, z: -200}
 --- !u!1 &729015103
 GameObject:
@@ -2034,7 +2034,7 @@ PrefabInstance:
     - target: {fileID: 4509605632291128766, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: _characteristics.Array.data[0]
       value: 
-      objectReference: {fileID: 11400000, guid: 0b106d90e98cb2d4f8ab0c298eb8c7c9, type: 2}
+      objectReference: {fileID: 11400000, guid: 87c683c03bcbdde4d84995265efcb071, type: 2}
     - target: {fileID: 4509605632291128766, guid: 3d5418030a2d95940994b5f8e91feb2e, type: 3}
       propertyPath: _characteristics.Array.data[1]
       value: 

@@ -11,12 +11,12 @@ namespace ShipLogic.Strategy.Attack
     public class ShipAttackLogicBase : IDisposable
     {
         public ShipBase SelectedEnemy;
-        public IShipCommander Commander => _commanderCache ??= _ship.GetCommander();
+        public ICommanderCommander CommanderCommander => _commanderCommanderCache ??= _ship.GetCommander();
         public IReadOnlyCollection<ShipBase> FoundEnemies => _foundEnemies;
         public IReadOnlyCollection<ShipBase> FoundAllies => _foundAllies;
         
 
-        private IShipCommander _commanderCache;
+        private ICommanderCommander _commanderCommanderCache;
         
         private readonly ShipBase _ship;
 
@@ -107,7 +107,7 @@ namespace ShipLogic.Strategy.Attack
                 return;
             }
 
-            Commander.ChangeStateToIdle();
+            CommanderCommander.ChangeStateToIdle();
             SelectedEnemy = null;
             // Commander.SetPointForMovementToEnemy();
         }
@@ -125,7 +125,7 @@ namespace ShipLogic.Strategy.Attack
 
         public void Dispose()
         {
-            _commanderCache = null;
+            _commanderCommanderCache = null;
             SelectedEnemy = null;
             _foundEnemies.Clear();
             _foundAllies.Clear();

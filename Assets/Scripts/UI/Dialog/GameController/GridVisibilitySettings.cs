@@ -24,8 +24,8 @@ namespace UI.Dialog.GameController
         private void CreateParameters()
         {
             CreateParameterForMovement();
-            CreateParameterForSector();
-            // CreateParameterForDebug();
+            CreateParameterForSectorPlayer1();
+            CreateParameterForSectorPlayer2();
         }
 
         private void CreateParameterForMovement()
@@ -34,18 +34,18 @@ namespace UI.Dialog.GameController
             parameter.Init("Сетка для движения", state => ChangeStateParameter(parameter, _gridViewing.SelectGridToDisplayForMovement, state));
         }
 
-        private void CreateParameterForSector()
+        private void CreateParameterForSectorPlayer1()
         {
             var parameter = GetNewParameter();
-            parameter.Init("Сетка секторов", state => ChangeStateParameter(parameter, _gridViewing.SelectGridToDisplayForSector, state));
+            parameter.Init("Сетка весов (Player1)", state => ChangeStateParameter(parameter, _gridViewing.SelectedGridToDisplayForSectorPlayer1, state));
         }
-
-        private void CreateParameterForDebug()
+        
+        private void CreateParameterForSectorPlayer2()
         {
             var parameter = GetNewParameter();
-            parameter.Init("Сетка для нажатия", state => ChangeStateParameter(parameter, _gridViewing.SelectGridToDisplayForClick, state));
+            parameter.Init("Сетка весов (Player2)", state => ChangeStateParameter(parameter, _gridViewing.SelectedGridToDisplayForSectorPlayer2, state));
         }
-
+        
         private void ChangeStateParameter(GridVisibilityParameter parameter, Action onChangeToggle, bool state)
         {
             DeactivateOtherParameters();

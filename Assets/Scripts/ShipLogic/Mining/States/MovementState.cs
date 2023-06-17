@@ -4,31 +4,31 @@ namespace ShipLogic.Mining.States
 {
     public class MovementState : StateBase
     {
-        private readonly IShipCommander _commander;
+        private readonly ICommanderCommander _commanderCommander;
         public override string NameState => "Movement";
 
-        public MovementState(StateMachine machine, IShipCommander commander) : base(machine)
+        public MovementState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
         {
-            _commander = commander;
+            _commanderCommander = commanderCommander;
         }
         
         public override void Enter()
         {
             base.Enter();
-            _commander.TurnOnEngine();
+            _commanderCommander.TurnOnEngine();
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
 
-            if (!_commander.HasPointForMovement || _commander.IsNeedStop)
+            if (!_commanderCommander.HasPointForMovement || _commanderCommander.IsNeedStop)
             {
-                Machine.ChangeState(_commander.Idle);
+                Machine.ChangeState(_commanderCommander.Idle);
                 return;
             }
             
-            _commander.MoveToSelectedPoint();
+            _commanderCommander.MoveToSelectedPoint();
         }
     }
 }

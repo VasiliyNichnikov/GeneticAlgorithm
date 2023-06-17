@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using StateMachineLogic;
+using Players;
 using UnityEngine;
 
 namespace Map
@@ -12,8 +12,8 @@ namespace Map
         private enum GridDataType
         {
             Movement,
-            Sector,
-            ClickDebug
+            SectorPlayer1,
+            SectorPlayer2
         }
         
         [Serializable]
@@ -38,7 +38,6 @@ namespace Map
         private readonly Dictionary<GridDataType, GridWrapper> _gridsCache = new ();
 
         public GridWrapper GridWrapperForMovement => _gridsCache[GridDataType.Movement];
-        public GridWrapper GridWrapperForSector => _gridsCache[GridDataType.Sector];
 
         [CanBeNull]
         public GridInt GridForMovement
@@ -51,26 +50,28 @@ namespace Map
         }
 
         [CanBeNull]
-        public GridSector GridForSector
+        public GridPlayerSector GetGridPlayerForSector(PlayerType player)
         {
-            get
+            if (player == PlayerType.None)
             {
-                var grid = GetGrid(GridDataType.Sector);
-                return grid.HasGridSector ? grid.GridSector : null;
+                return null;
             }
+            
+            var grid = GetGridWrapperPlayerForSector(player);
+            return grid.HasGridSector ? grid.GridPlayerSector : null;
         }
 
-        [CanBeNull]
-        public GridInt GridForClick
+        public GridWrapper GetGridWrapperPlayerForSector(PlayerType player)
         {
-            get
+            if (player == PlayerType.None)
             {
-                var grid = GetGrid(GridDataType.ClickDebug);
-                return grid.HasGridInt ? grid.GridInt : null;
+                return default;
             }
+            var sectorType = player == PlayerType.Player1 ? GridDataType.SectorPlayer1 : GridDataType.SectorPlayer2;
+            var grid = GetGrid(sectorType);
+            return grid;
         }
-        
-        
+
         private GridWrapper GetGrid(GridDataType type)
         {
             if (!_gridsCache.ContainsKey(type))
@@ -86,13 +87,13 @@ namespace Map
             var data = GetGridDataByType(type);
             switch (type)
             {
-                case GridDataType.ClickDebug:
                 case GridDataType.Movement:
                     var gridInt = new GridInt(data.Weight, data.Length, data.CellSize, data.OriginPosition, transform, false);
                     return GridWrapper.CreateGridInt(gridInt);
                 
-                case GridDataType.Sector:
-                    var gridSector = new GridSector(data.Weight, data.Length, data.CellSize, data.OriginPosition, transform, false);
+                case GridDataType.SectorPlayer1:
+                case GridDataType.SectorPlayer2:
+                    var gridSector = new GridPlayerSector(data.Weight, data.Length, data.CellSize, data.OriginPosition, transform, false);
                     return GridWrapper.CreateGridSector(gridSector);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);

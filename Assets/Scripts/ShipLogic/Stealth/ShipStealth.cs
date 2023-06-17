@@ -10,7 +10,7 @@ namespace ShipLogic.Stealth
         public override float ThreatLevel => 0.2f;
         public override ShipType Type => ShipType.Stealth;
 
-        protected override IShipCommander GetNewCommander()
+        protected override ICommanderCommander GetNewCommander()
         {
             return new StealthCommander(this);
         }

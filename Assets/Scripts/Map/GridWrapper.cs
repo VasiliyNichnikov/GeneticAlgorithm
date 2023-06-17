@@ -7,7 +7,7 @@ namespace Map
         public readonly bool HasGridInt;
         [CanBeNull] public readonly GridInt GridInt;
         public readonly bool HasGridSector;
-        [CanBeNull] public readonly GridSector GridSector;
+        [CanBeNull] public readonly GridPlayerSector GridPlayerSector;
 
         public int GetWidth()
         {
@@ -18,7 +18,7 @@ namespace Map
 
             if (HasGridSector)
             {
-                return GridSector!.GetWidth();
+                return GridPlayerSector!.GetWidth();
             }
 
             return -1;
@@ -33,7 +33,7 @@ namespace Map
 
             if (HasGridSector)
             {
-                return GridSector!.GetLength();
+                return GridPlayerSector!.GetLength();
             }
 
             return -1;
@@ -44,18 +44,18 @@ namespace Map
             return new GridWrapper(gridInt, null);
         }
 
-        public static GridWrapper CreateGridSector(GridSector gridSector)
+        public static GridWrapper CreateGridSector(GridPlayerSector gridPlayerSector)
         {
-            return new GridWrapper(null, gridSector);
+            return new GridWrapper(null, gridPlayerSector);
         }
 
-        private GridWrapper(GridInt gridInt, GridSector gridSector)
+        private GridWrapper(GridInt gridInt, GridPlayerSector gridPlayerSector)
         {
             GridInt = gridInt;
-            GridSector = gridSector;
+            GridPlayerSector = gridPlayerSector;
 
             HasGridInt = GridInt != null;
-            HasGridSector = GridSector != null;
+            HasGridSector = GridPlayerSector != null;
         }
     }
 }

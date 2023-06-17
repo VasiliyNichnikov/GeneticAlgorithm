@@ -9,14 +9,15 @@ using UnityEngine;
 
 namespace ShipLogic
 {
-    public abstract class CommanderBase : IShipCommander
+    public abstract class CommanderBase : ICommanderCommander
     {
         public float HealthPercentages => Ship.Health.CurrentHealthPercentages;
         public bool IsInBattle => HasEnemy;
         public int NumberOfEnemiesNearby => _shipAttackLogic.NumberEnemies;
         public int NumberOfAlliesNearby => _shipAttackLogic.NumberAllies;
         public ITarget ShipTarget => Ship;
-        
+        public Vector3 PositionShip => Ship.ObjectPosition;
+
         public abstract StateBase Idle { get; protected set; }
         public abstract StateBase Attack { get; protected set; }
         public abstract StateBase Movement { get; protected set; }
@@ -33,6 +34,7 @@ namespace ShipLogic
         protected readonly StateMachine Machine;
 
         private readonly TeamManager _teamManager;
+        private readonly WeightCalculator _weightCalculator;
         private IShipAttackLogic _shipAttackLogic;
 
         protected CommanderBase(ShipBase ship, IShipAttackLogic attackLogic)
@@ -43,6 +45,7 @@ namespace ShipLogic
             _shipAttackLogic = attackLogic;
             
             _teamManager = new TeamManager(this);
+            _weightCalculator = new WeightCalculator(ship.Type, _shipAttackLogic);
 
             InitStateMachineAndStates();
             SpaceMap.Map.OnMoveNonStaticObjects += CustomUpdate;
@@ -143,6 +146,11 @@ namespace ShipLogic
         public void TurnOffEngine()
         {
             Ship.TurnOffEngine();
+        }
+
+        public float CalculateWeight()
+        {
+            return _weightCalculator.GetWeight();
         }
 
         public void ExecuteCommand(Command command)

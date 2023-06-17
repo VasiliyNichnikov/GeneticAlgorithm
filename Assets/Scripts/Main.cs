@@ -62,6 +62,7 @@ public class Main : MonoBehaviour
     {
         _loaderManager.AddLoaderInQueue(new MiningPlanetLoader());
         _loaderManager.AddLoaderInQueue(new SignalsLoader());
+        _loaderManager.AddLoaderInQueue(new WeightsLoader());
     }
 
     private void Update()

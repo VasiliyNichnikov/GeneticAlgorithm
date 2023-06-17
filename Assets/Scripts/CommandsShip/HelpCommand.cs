@@ -11,7 +11,7 @@ namespace CommandsShip
 
         public HelpCommand()
         {
-            Main.Instance.LoaderManager.GetAsync<SignalsLoader>(result =>
+            Main.Instance.LoaderManager.LoadAsync<SignalsLoader>(result =>
             {
                 _radiusOfHelp = result.GetHelpSignal().RadiusOfHelp;
             }, false);

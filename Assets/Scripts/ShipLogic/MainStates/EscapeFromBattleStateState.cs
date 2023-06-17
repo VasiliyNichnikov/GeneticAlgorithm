@@ -6,30 +6,30 @@ namespace ShipLogic.MainStates
     {
         public override string NameState => "Escape from battle";
 
-        private readonly IShipCommander _commander;
+        private readonly ICommanderCommander _commanderCommander;
         
-        public EscapeFromBattleStateState(StateMachine machine, IShipCommander commander) : base(machine)
+        public EscapeFromBattleStateState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
         {
-            _commander = commander;
+            _commanderCommander = commanderCommander;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _commander.TurnOnEngine();
+            _commanderCommander.TurnOnEngine();
         }
         
         public override void UpdateLogic()
         {
             base.UpdateLogic();
             
-            if (!_commander.HasPointForMovement || _commander.IsNeedStop)
+            if (!_commanderCommander.HasPointForMovement || _commanderCommander.IsNeedStop)
             {
-                Machine.ChangeState(_commander.Idle);
+                Machine.ChangeState(_commanderCommander.Idle);
                 return;
             }
             
-            _commander.MoveToSelectedPoint();
+            _commanderCommander.MoveToSelectedPoint();
         }
     }
 }

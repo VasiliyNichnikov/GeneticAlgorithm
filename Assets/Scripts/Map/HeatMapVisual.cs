@@ -33,12 +33,12 @@ namespace Map
             
             if (_grid.HasGridSector)
             {
-                UpdateHeatMapVisual(_grid.GridSector, needRecreateMesh);
+                UpdateHeatMapVisual(_grid.GridPlayerSector, needRecreateMesh);
                 return;
             }
         }
         
-        private void UpdateHeatMapVisual<T>(GridBase<T> grid, bool needRecreateMesh = false) where T: struct
+        private void UpdateHeatMapVisual<T>(GridBase<T> grid, bool needRecreateMesh = false)
         {
             if (needRecreateMesh)
             {
@@ -58,8 +58,8 @@ namespace Map
                     var index = x * grid.GetLength() + z;
                     var quadSize = new Vector3(1, 0, 1) * grid.GetCellSize();
 
-                    var gridValue = grid.GetValueInt(x, z);
-                    var gridValueNormalized = (float)gridValue / GridInt.HeatMapMaxValue;
+                    var gridValue = grid.GetValueFloat(x, z);
+                    var gridValueNormalized = gridValue / GridInt.HeatMapMaxValue;
                     var gridValueUV = new Vector2(gridValueNormalized, 0);
                     
                     MeshUtils.AddToMeshArrays(

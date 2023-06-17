@@ -12,7 +12,7 @@ namespace ShipLogic.Mining
         public override ShipType Type => ShipType.Mining;
         protected override float MinAngleRotation => 5f;
 
-        protected override IShipCommander GetNewCommander()
+        protected override ICommanderCommander GetNewCommander()
         {
             return new MiningCommander(this, new MiningAttackLogic(this));
         }

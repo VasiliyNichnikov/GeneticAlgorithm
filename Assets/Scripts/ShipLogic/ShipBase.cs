@@ -30,7 +30,7 @@ namespace ShipLogic
         public float Radius => Agent.radius;
         public ShipData CalculatedShipData => _calculatedShipData;
         public abstract ShipType Type { get; }
-        public string NameCurrentState => _commander == null ? "Not commander" : _commander.NameCurrentState;
+        public string NameCurrentState => _commanderCommander == null ? "Not commander" : _commanderCommander.NameCurrentState;
 
         protected abstract float MinAngleRotation { get; }
         [SerializeField] private MeshRenderer Renderer;
@@ -39,7 +39,7 @@ namespace ShipLogic
         [SerializeField] protected GunPoint[] GunPoints;
         [SerializeField] protected ShipEffectsManager EffectsManager;
 
-        private IShipCommander _commander;
+        private ICommanderCommander _commanderCommander;
         private bool _isInitialized;
         private ShipData _calculatedShipData;
         private ShipClickHandler _clickHandler;
@@ -59,7 +59,7 @@ namespace ShipLogic
             }
 
             InitSkin(builder.Data);
-            _commander = GetNewCommander();
+            _commanderCommander = GetNewCommander();
 
             _isInitialized = true;
             PlayerType = builder.PlayerType;
@@ -79,7 +79,7 @@ namespace ShipLogic
         }
 
 
-        protected abstract IShipCommander GetNewCommander();
+        protected abstract ICommanderCommander GetNewCommander();
 
         // Эта штука в совокупностью CanAttackOtherShip создают баги
         public bool SeeOtherShipDistance(IDetectedObject ship)
@@ -116,15 +116,15 @@ namespace ShipLogic
             gameObject.SetActive(true);
         }
 
-        public IShipCommander GetCommander()
+        public ICommanderCommander GetCommander()
         {
-            if (_commander == null)
+            if (_commanderCommander == null)
             {
                 Debug.LogError("Commander is null");
                 return null;
             }
 
-            return _commander;
+            return _commanderCommander;
         }
 
         public void Hide()
@@ -134,8 +134,8 @@ namespace ShipLogic
             TurnOffEngine();
             Gun.Dispose();
             // При уничтожение корабля теряем командира
-            _commander.Dispose();
-            _commander = null;
+            _commanderCommander.Dispose();
+            _commanderCommander = null;
 
             gameObject.SetActive(false);
         }
@@ -228,22 +228,22 @@ namespace ShipLogic
                 return;
             }
             
-            if (_commander == null)
+            if (_commanderCommander == null)
             {
                 return;
             }
             
             Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(_commander.GetPointForMovement(), 1.5f);
+            Gizmos.DrawSphere(_commanderCommander.GetPointForMovement(), 1.5f);
 
             Gizmos.color = new Color(1, 0, 0, 0.6f);
-            foreach (var enemy in _commander.GetFoundEnemies())
+            foreach (var enemy in _commanderCommander.GetFoundEnemies())
             {
                 Gizmos.DrawSphere(enemy.ObjectPosition, enemy.Radius);
             }
             
             Gizmos.color = new Color(0, 1, 0, 0.6f);
-            foreach (var ally in _commander.GetFoundAllies())
+            foreach (var ally in _commanderCommander.GetFoundAllies())
             {
                 Gizmos.DrawSphere(ally.ObjectPosition, ally.Radius);
             }

@@ -6,9 +6,6 @@ namespace Map
 {
     public class GridInt : GridBase<int>
     {
-        public const int HeatMapMaxValue = 100;
-        public const int HeatMapMinValue = 0;
-        
         public GridInt(int width, int length, float cellSize, Vector3 originPosition, Transform parent = null, bool isDebug = false) : 
             base(width, length, cellSize, originPosition, parent, isDebug)
         {
@@ -107,7 +104,23 @@ namespace Map
             SetValue(x, z, GetValue(x, z) + value);
         }
 
-        public override int GetValueInt(int x, int z)
+        protected override void SetValue(int x, int z, int value)
+        {
+            if (!CanAddValue(x, z, value))
+            {
+                return;
+            }
+            
+            GridArray[x, z] = Mathf.Clamp(value, HeatMapMinValue, HeatMapMaxValue);;
+            if (IsDebugMode)
+            {
+                DebugTextArray[x, z].text = value.ToString();
+            }
+
+            CallOnChangeCellValue(x, z);
+        }
+
+        public override float GetValueFloat(int x, int z)
         {
             return GetValue(x, z);
         }

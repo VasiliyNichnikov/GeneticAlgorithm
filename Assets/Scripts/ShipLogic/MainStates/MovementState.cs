@@ -6,42 +6,42 @@ namespace ShipLogic.MainStates
     {
         public override string NameState => "MovementState";
 
-        private readonly IShipCommander _commander;
+        private readonly ICommanderCommander _commanderCommander;
         
-        public MovementState(StateMachine machine, IShipCommander commander) : base(machine)
+        public MovementState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
         {
-            _commander = commander;
+            _commanderCommander = commanderCommander;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _commander.TurnOnEngine();
+            _commanderCommander.TurnOnEngine();
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
 
-            if (_commander.NeedEscapeFromBattle())
+            if (_commanderCommander.NeedEscapeFromBattle())
             {
-                Machine.ChangeState(_commander.EscapeFromBattle);
+                Machine.ChangeState(_commanderCommander.EscapeFromBattle);
                 return;
             }
 
-            if (_commander.HasEnemy && _commander.SeeOtherEnemyShip())
+            if (_commanderCommander.HasEnemy && _commanderCommander.SeeOtherEnemyShip())
             {
-                Machine.ChangeState(_commander.PrepareAttack);
+                Machine.ChangeState(_commanderCommander.PrepareAttack);
                 return;
             }
 
-            if (!_commander.HasPointForMovement || _commander.IsNeedStop)
+            if (!_commanderCommander.HasPointForMovement || _commanderCommander.IsNeedStop)
             {
-                Machine.ChangeState(_commander.Idle);
+                Machine.ChangeState(_commanderCommander.Idle);
                 return;
             }
             
-            _commander.MoveToSelectedPoint();
+            _commanderCommander.MoveToSelectedPoint();
         }
     }
 }
