@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Players;
+using UnityEngine;
 using Utils;
 
 namespace Map
@@ -9,6 +10,7 @@ namespace Map
         /// Значение берется из GridCon
         /// </summary>
         MapObjectType TypeObject { get; }
+        PlayerType PlayerType { get; }
         
         bool IsStatic { get; }
         

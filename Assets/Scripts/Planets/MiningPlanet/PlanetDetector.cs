@@ -1,7 +1,7 @@
-﻿using SpaceObjects;
+﻿using Map;
 using UnityEngine;
 
-namespace Planets.MiningPlayer
+namespace Planets.MiningPlanet
 {
     public class PlanetDetector : MonoBehaviour
     {
@@ -14,7 +14,7 @@ namespace Planets.MiningPlayer
 
         private void OnTriggerEnter(Collider other)
         {
-            var detectedObject = other.GetComponent<IDetectedObject>();
+            var detectedObject = other.GetComponent<IObjectOnMap>();
 
             if (detectedObject == null)
             {
@@ -26,7 +26,7 @@ namespace Planets.MiningPlayer
 
         private void OnTriggerExit(Collider other)
         {
-            var detectedObject = other.GetComponent<IDetectedObject>();
+            var detectedObject = other.GetComponent<IObjectOnMap>();
 
             if (detectedObject == null)
             {

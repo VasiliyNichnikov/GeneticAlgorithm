@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Loaders;
-using Planets.MiningPlayer;
+using Planets.MiningPlanet;
 using Players;
 using UnityEngine;
 using UnityEngine.UI;

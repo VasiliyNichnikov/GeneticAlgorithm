@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Planets.MiningPlayer;
+using Planets.MiningPlanet;
 using Planets.PlayerPlanet;
 using Players;
 using UnityEngine;
@@ -26,7 +26,7 @@ namespace Storages
 
         public IPlayerPlanet GetPlayerPlanet(PlayerType playerType)
         {
-            return _playerPlanets.First(p => p.Player == playerType);
+            return _playerPlanets.First(p => p.PlayerType == playerType);
         }
     }
 }

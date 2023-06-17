@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Map;
 using Planets;
 using SpaceObjects;
 using StateMachineLogic;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace ShipLogic
 {
-    public interface ICommanderCommander : ICommanderInfo, IDisposable
+    public interface ICommander : ICommanderInfo, IDisposable
     {
         StateBase Idle { get; }
         StateBase Attack { get; }
@@ -20,9 +21,6 @@ namespace ShipLogic
         string NameCurrentState { get; }
         
         ShipType ShipType { get; }
-
-        void AddFoundEnemy(IDetectedObject detectedObject);
-        void RemoveFoundEnemy(IDetectedObject detectedObject);
 
         bool NeedEscapeFromBattle();
         bool IsDistanceToAttack();
@@ -45,10 +43,6 @@ namespace ShipLogic
 
 #if UNITY_EDITOR
         Vector3 GetPointForMovement();
-        
-        IEnumerable<ShipBase> GetFoundEnemies();
-        
-        IEnumerable<ShipBase> GetFoundAllies();
 #endif
     }
 }

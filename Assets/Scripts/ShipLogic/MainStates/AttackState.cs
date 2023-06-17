@@ -7,43 +7,43 @@ namespace ShipLogic.MainStates
     {
         public override string NameState => "Attack";
         
-        private readonly ICommanderCommander _commanderCommander;
+        private readonly ICommander _commander;
 
 
-        public AttackState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
+        public AttackState(StateMachine machine, ICommander commander) : base(machine)
         {
-            _commanderCommander = commanderCommander;
+            _commander = commander;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _commanderCommander.StartShoot();
+            _commander.StartShoot();
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
             
-            if (_commanderCommander.NeedEscapeFromBattle())
+            if (_commander.NeedEscapeFromBattle())
             {
-                Machine.ChangeState(_commanderCommander.EscapeFromBattle);
+                Machine.ChangeState(_commander.EscapeFromBattle);
                 return;
             }
             
-            if (!_commanderCommander.CanAttackOtherEnemyShip())
+            if (!_commander.CanAttackOtherEnemyShip())
             {
-                Machine.ChangeState(_commanderCommander.PrepareAttack);
+                Machine.ChangeState(_commander.PrepareAttack);
                 return;
             }
 
-            _commanderCommander.ShootInEnemy();
+            _commander.ShootInEnemy();
         }
 
         public override void Exit()
         {
             base.Exit();
-            _commanderCommander.FinishShoot();
+            _commander.FinishShoot();
         }
     }
 }

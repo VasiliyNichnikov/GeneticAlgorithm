@@ -1,44 +1,29 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using SpaceObjects;
-using Unity.VisualScripting.Antlr3.Runtime.Tree;
+﻿using System.Linq;
+using Map;
 using UnityEngine;
 
 namespace ShipLogic.Strategy.Attack
 {
     public class AircraftCarrierAttackLogic : IShipAttackLogic
     {
-        public IEnumerable<ShipBase> Enemies => _logicBase.FoundEnemies;
-        public IEnumerable<ShipBase> Allies => _logicBase.FoundAllies;
-        public int NumberEnemies => _logicBase.FoundEnemies.Count;
-        public int NumberAllies => _logicBase.FoundAllies.Count;
         public ShipBase SelectedEnemy => _logicBase.SelectedEnemy;
 
         private readonly ShipBase _ship;
+        private readonly IShipDetector _detector;
         private readonly ShipAttackLogicBase _logicBase;
 
         public AircraftCarrierAttackLogic(ShipBase ship)
         {
             _ship = ship;
+            _detector = ship.GetDetector();
             _logicBase = new ShipAttackLogicBase(ship);
-        }
-
-
-        public void AddFoundShip(IDetectedObject detectedObject)
-        {
-            _logicBase.TryAddFoundShip(detectedObject);
-        }
-
-        public void RemoveFoundShip(IDetectedObject detectedObject)
-        {
-            _logicBase.TryRemoveFoundShip(detectedObject);
         }
 
         public void CheckEnemiesForOpportunityToAttack()
         {
             if (_logicBase.SelectedEnemy != null && _logicBase.SelectedEnemy.IsDead)
             {
-                _logicBase.TryRemoveFoundShip(_logicBase.SelectedEnemy);
+                _detector.TryRemoveFoundShip(_logicBase.SelectedEnemy);
             }
 
             if (_logicBase.SelectedEnemy != null)
@@ -46,12 +31,14 @@ namespace ShipLogic.Strategy.Attack
                 return;
             }
 
-            if (_logicBase.FoundEnemies.Count == 0)
+            if (_detector.Enemies.Count == 0)
             {
                 return;
             }
 
-            var firstEnemy = _logicBase.SortAndGetFirstEnemyShip(SortFoundEnemies);
+            var enemiesAsList = _detector.Enemies.ToList();
+            enemiesAsList.Sort(SortFoundEnemies);
+            var firstEnemy = enemiesAsList[0];
 
             if (_logicBase.SelectedEnemy != null && firstEnemy != null && firstEnemy != _logicBase.SelectedEnemy)
             {
@@ -64,10 +51,10 @@ namespace ShipLogic.Strategy.Attack
             }
             
             _logicBase.SelectedEnemy = firstEnemy;
-            _logicBase.CommanderCommander.SetPointForMovementToEnemy(_logicBase.SelectedEnemy);
+            _logicBase.Commander.SetPointForMovementToEnemy(_logicBase.SelectedEnemy);
         }
 
-        private int SortFoundEnemies(ShipBase a, ShipBase b)
+        private int SortFoundEnemies(IObjectOnMap a, IObjectOnMap b)
         {
             var weight1 = Vector3.Distance(_ship.ObjectPosition, a.ObjectPosition);
             var weight2 = Vector3.Distance(_ship.ObjectPosition, b.ObjectPosition);

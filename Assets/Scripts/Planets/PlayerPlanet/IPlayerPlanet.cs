@@ -2,7 +2,7 @@
 
 namespace Planets.PlayerPlanet
 {
-    public interface IPlayerPlanet : IObjectOnMap, ITarget
+    public interface IPlayerPlanet : IPlanet
     {
         float CurrentGold { get; }
         void CreateRandomShipDebug();

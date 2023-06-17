@@ -12,7 +12,7 @@ namespace ShipLogic.Mining
         public override StateBase Movement { get; protected set; }
         public override StateBase PrepareAttack { get; protected set; }
 
-        public MiningCommander(ShipBase ship, IShipAttackLogic attackLogic) : base(ship, attackLogic)
+        public MiningCommander(ShipBase ship) : base(ship, new MiningAttackLogic())
         {
         }
 

@@ -46,11 +46,11 @@ namespace Map
             _ships[ship.PlayerType].Remove(ship);
         }
 
-        public IEnumerable<ICommanderCommander> GetAlliedShipsOnMap(PlayerType player)
+        public IEnumerable<ICommander> GetAlliedShipsOnMap(PlayerType player)
         {
             if (!_ships.ContainsKey(player))
             {
-                return ArraySegment<ICommanderCommander>.Empty;
+                return ArraySegment<ICommander>.Empty;
             }
             
             return _ships[player].Where(s => !s.IsDead).Select(s => s.GetCommander());

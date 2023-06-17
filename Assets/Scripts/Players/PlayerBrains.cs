@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Planets.MiningPlayer;
+using Planets.MiningPlanet;
 
 namespace Players
 {

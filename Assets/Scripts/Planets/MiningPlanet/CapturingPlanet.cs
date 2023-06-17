@@ -2,7 +2,7 @@
 using Players;
 using UnityEngine;
 
-namespace Planets.MiningPlayer
+namespace Planets.MiningPlanet
 {
     public class CapturingPlanet : IDisposable
     {
@@ -10,7 +10,7 @@ namespace Planets.MiningPlayer
         {
             NotCaptured, // Не захачено
             InProcessOfCapture, // В процессе захвата
-            OnPause, // На паузе
+            Pause, // На паузе
             Captured // Захвачено
         }
         
@@ -65,7 +65,7 @@ namespace Planets.MiningPlayer
                 return;
             }
 
-            _currentState = CapturingStates.OnPause;
+            _currentState = CapturingStates.Pause;
             _isPaused = true;
         }
 

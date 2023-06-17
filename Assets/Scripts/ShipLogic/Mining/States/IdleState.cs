@@ -5,26 +5,26 @@ namespace ShipLogic.Mining.States
     public class IdleState : StateBase
     {
         public override string NameState => "Idle";
-        private readonly ICommanderCommander _commanderCommander;
+        private readonly ICommander _commander;
 
-        public IdleState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
+        public IdleState(StateMachine machine, ICommander commander) : base(machine)
         {
-            _commanderCommander = commanderCommander;
+            _commander = commander;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _commanderCommander.TurnOffEngine();
+            _commander.TurnOffEngine();
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
 
-            if (_commanderCommander.HasPointForMovement)
+            if (_commander.HasPointForMovement)
             {
-                Machine.ChangeState(_commanderCommander.Movement);
+                Machine.ChangeState(_commander.Movement);
             }
         }
     }

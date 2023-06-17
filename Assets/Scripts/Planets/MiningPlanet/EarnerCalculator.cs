@@ -4,7 +4,7 @@ using Loaders;
 using Players;
 using UnityEngine;
 
-namespace Planets.MiningPlayer
+namespace Planets.MiningPlanet
 {
     /// <summary>
     /// Рассчитывает сколько золота должен получить игрок

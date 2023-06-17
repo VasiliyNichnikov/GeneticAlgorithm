@@ -31,16 +31,16 @@ namespace CommandsShip
 
         private Command? _currentCommand;
 
-        private readonly ICommanderCommander _commanderCommander;
+        private readonly ICommander _commander;
 
-        public TeamManager(ICommanderCommander commanderCommander)
+        public TeamManager(ICommander commander)
         {
-            _commanderCommander = commanderCommander;
+            _commander = commander;
             _commandLogics = new Dictionary<Command.CommandType, ICommandLogic>
             {
-                { Command.CommandType.Movement, new MovementCommand(commanderCommander) },
+                { Command.CommandType.Movement, new MovementCommand(commander) },
                 { Command.CommandType.Help, new HelpCommand() },
-                { Command.CommandType.EscapeFromBattle, new EscapeFromBattleCommand(commanderCommander) }
+                { Command.CommandType.EscapeFromBattle, new EscapeFromBattleCommand(commander) }
             };
         }
 
@@ -74,7 +74,7 @@ namespace CommandsShip
 
             var checkPriority = _currentCommand.Value.SelectedPriorityType < command.SelectedPriorityType;
             var checkPermission = (CommandExecutionPermissions.ContainsKey(command.SelectedCommand) && 
-                                   CommandExecutionPermissions[command.SelectedCommand].Contains(_commanderCommander.ShipType)) || 
+                                   CommandExecutionPermissions[command.SelectedCommand].Contains(_commander.ShipType)) || 
                                   !CommandExecutionPermissions.ContainsKey(command.SelectedCommand);
             return checkPriority && checkPermission;
         }

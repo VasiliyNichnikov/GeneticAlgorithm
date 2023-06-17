@@ -1,5 +1,6 @@
 ﻿using System;
 using Map;
+using Players;
 using SpaceObjects;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ namespace Planets
     {
         public Vector3 ObjectPosition => transform.position;
         public MapObjectType TypeObject => MapObjectType.Planet;
+        public PlayerType PlayerType => PlayerType.None;
         public bool IsStatic => true;
         public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
         public Vector3 RightTopPosition => _perimeter.RightTopPoint;

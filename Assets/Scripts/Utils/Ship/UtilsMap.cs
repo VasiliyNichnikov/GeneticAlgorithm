@@ -1,10 +1,10 @@
-﻿using ShipLogic;
-using SpaceObjects;
-using UnityEngine;
+﻿using Map;
+using Planets;
+using ShipLogic;
 
 namespace Utils.Ship
 {
-    public static class UtilsEnemy
+    public static class UtilsMap
     {
         public enum ShipType
         {
@@ -12,11 +12,12 @@ namespace Utils.Ship
             Ally,
             Enemy
         }
-        
-        public static ShipType TryGetOtherShip(this ShipBase myShip, IDetectedObject detectedObject, out ShipBase otherShip)
+
+        public static ShipType TryGetOtherShip(this ShipBase myShip, IObjectOnMap detectedObject,
+            out ShipBase otherShip)
         {
             otherShip = null;
-            if (detectedObject.ObjectType != DetectedObjectType.Ship)
+            if (detectedObject.TypeObject != MapObjectType.Ship)
             {
                 return ShipType.None;
             }
@@ -44,8 +45,25 @@ namespace Utils.Ship
             otherShip = ship;
             return ShipType.Enemy;
         }
-        
-        private static bool IsAlly(IDetectedObject enemy, IDetectedObject ship)
+
+        public static bool TryGetPlanet(IObjectOnMap detectedObject, out IPlanet planet)
+        {
+            planet = null;
+            if (detectedObject.TypeObject != MapObjectType.Planet)
+            {
+                return false;
+            }
+
+            if (detectedObject is IPlanet detectedPlanet)
+            {
+                planet = detectedPlanet;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsAlly(IObjectOnMap enemy, IObjectOnMap ship)
         {
             return enemy.PlayerType == ship.PlayerType;
         }

@@ -12,6 +12,7 @@ namespace DebugShip
     {
         private class DebugBuilderShip: IBuilderShip
         {
+            public ICommander Commander { get; }
             public PlayerType PlayerType { get; private set; }
         
             public ShipData Data { get; private set; }
@@ -28,7 +29,7 @@ namespace DebugShip
         [SerializeField] private ShipStealth[] _shipStealths;
         [SerializeField] private ShipCharacteristics _characteristics;
         [SerializeField] private Transform _pointForMovement;
-        private ICommanderCommander _commanderCommander;
+        private ICommander _commander;
 
         private void Start()
         {

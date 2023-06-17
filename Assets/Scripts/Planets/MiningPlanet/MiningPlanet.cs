@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Loaders;
 using Map;
 using Players;
 using ShipLogic.Mining;
@@ -10,12 +11,11 @@ using UnityEngine;
 using Utils;
 using Random = UnityEngine.Random;
 
-namespace Planets.MiningPlayer
+namespace Planets.MiningPlanet
 {
     public class MiningPlanet : MonoBehaviour, IMiningPlanet
     {
-        // todo throw new Exception("Need supported")
-        public float ThreatLevel => 1.0f;
+        public float ThreatLevel { get; private set; }
 
         public Vector3 GetPointToApproximate()
         {
@@ -52,6 +52,7 @@ namespace Planets.MiningPlayer
         }
 
         public MapObjectType TypeObject => MapObjectType.Planet;
+        public PlayerType PlayerType => PlayerType.None;
         public bool IsStatic => true;
         public Vector3 ObjectPosition => transform.position;
         public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
@@ -61,6 +62,7 @@ namespace Planets.MiningPlayer
         public event Action<PlayerType, float> OnUpdateRemainingTimeExtraction;
         public event Action<PlayerType, float> OnPlayerCollectedGold;
         public float CaptureTime => _captureTime;
+        public PlanetType Type => PlanetType.Mining;
 
         // todo желательно вынести в отдельный файл с настройками
         [SerializeField, Header("Время захвата в сек"), Range(0, 100)]
@@ -77,7 +79,7 @@ namespace Planets.MiningPlayer
         /// </summary>
         private EarnerCalculator _earnerCalculator;
 
-        private readonly List<IDetectedObject> _detectedObjects = new();
+        private readonly List<IObjectOnMap> _detectedObjects = new();
 
         private void Start()
         {
@@ -97,9 +99,15 @@ namespace Planets.MiningPlayer
             _miningPlanetDialog.Init(this, transform);
             Main.Instance.OnUpdateGame += CustomUpdate;
             Main.Instance.ShipFactory.OnDestroyShip += RemoveFoundShip;
+            
+            // Загрузка важности планеты
+            Main.Instance.LoaderManager.LoadAsync<WeightsLoader>(loader =>
+            {
+                ThreatLevel = loader.GetWeightForSelectedPlanet(Type);
+            }, false);
         }
 
-        public void AddFoundShip(IDetectedObject detectedObject)
+        public void AddFoundShip(IObjectOnMap detectedObject)
         {
             if (_detectedObjects.Contains(detectedObject))
             {
@@ -116,7 +124,7 @@ namespace Planets.MiningPlayer
             CheckOutPlanetForTwoPlayers();
         }
 
-        public void RemoveFoundShip(IDetectedObject detectedObject)
+        public void RemoveFoundShip(IObjectOnMap detectedObject)
         {
             if (!_detectedObjects.Contains(detectedObject))
             {
@@ -166,7 +174,7 @@ namespace Planets.MiningPlayer
                     }
 
                     break;
-                case CapturingPlanet.CapturingStates.OnPause:
+                case CapturingPlanet.CapturingStates.Pause:
                     if (!hasEnemy && hasAllies && _capturingPlanet.ExcitingPlayer == player)
                     {
                         _capturingPlanet.ContinueCapturing();

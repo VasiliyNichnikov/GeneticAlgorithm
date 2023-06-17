@@ -6,11 +6,11 @@ namespace CommandsShip
 {
     public class EscapeFromBattleCommand : ICommandLogic
     {
-        private readonly ICommanderCommander _commanderCommander;
+        private readonly ICommander _commander;
 
-        public EscapeFromBattleCommand(ICommanderCommander commanderCommander)
+        public EscapeFromBattleCommand(ICommander commander)
         {
-            _commanderCommander = commanderCommander;
+            _commander = commander;
         }
 
         public void ExecuteRequest(Command command)
@@ -22,7 +22,7 @@ namespace CommandsShip
             }
 
             Debug.LogWarning("Command: EscapeFromBattleCommand");
-            _commanderCommander.SetPointForEscapeFromBattle(command.Target);
+            _commander.SetPointForEscapeFromBattle(command.Target);
         }
     }
 }

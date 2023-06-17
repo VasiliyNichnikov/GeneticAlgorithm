@@ -2,7 +2,7 @@
 using System.Linq;
 using CommandsShip;
 using Map;
-using Planets.MiningPlayer;
+using Planets.MiningPlanet;
 using ShipLogic;
 using UnityEngine;
 
@@ -55,13 +55,13 @@ namespace Players
 
                 continue;
                 // Если корабль в бою и у него мало здоровья и численность врагом, то просим о помощи
-                if (ship.IsInBattle &&
-                    ship.NumberOfEnemiesNearby > ship.NumberOfAlliesNearby && 
-                    ship.HealthPercentages <= 0.5f)
-                {
-                    GiveCommandHelp(ship);
-                    continue;
-                }
+                // if (ship.IsInBattle &&
+                //     ship.NumberOfEnemiesNearby > ship.NumberOfAlliesNearby && 
+                //     ship.HealthPercentages <= 0.5f)
+                // {
+                //     GiveCommandHelp(ship);
+                //     continue;
+                // }
             }
         }
 

@@ -1,36 +1,36 @@
 using System;
 using System.Collections.Generic;
 using HandlerClicks;
+using Loaders;
 using Map;
 using Planets;
 using Players;
-using SpaceObjects;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace ShipLogic
 {
-    public abstract class ShipBase : MonoBehaviour, IObjectToClick, IDetectedObject, IDisposable, IObjectOnMap, ITarget
+    public abstract class ShipBase : MonoBehaviour, IObjectToClick, IDisposable, IObjectOnMap, ITarget
     {
         public MapObjectType TypeObject => MapObjectType.Ship;
         public bool IsStatic { get; private set; }
         public Vector3 LeftBottomPosition => transform.position;
         public Vector3 RightTopPosition => transform.position;
 
-        public DetectedObjectType ObjectType => DetectedObjectType.Ship;
         public Vector3 ObjectPosition => transform.position;
         protected float SpeedMovement { get; private set; }
         public PlayerType PlayerType { get; private set; }
         public bool IsDead => Health.IsDead;
 
-        public abstract float ThreatLevel { get; }
+        public float ThreatLevel { get; private set; }
         public IShipHealth Health { get; private set; }
         public IShipEngine Engine { get; private set; }
         public IShipGun Gun { get; private set; }
         public float Radius => Agent.radius;
         public ShipData CalculatedShipData => _calculatedShipData;
+        public IShipDetector GetDetector() => Detector;
         public abstract ShipType Type { get; }
-        public string NameCurrentState => _commanderCommander == null ? "Not commander" : _commanderCommander.NameCurrentState;
+        public string NameCurrentState => _commander == null ? "Not commander" : _commander.NameCurrentState;
 
         protected abstract float MinAngleRotation { get; }
         [SerializeField] private MeshRenderer Renderer;
@@ -39,7 +39,7 @@ namespace ShipLogic
         [SerializeField] protected GunPoint[] GunPoints;
         [SerializeField] protected ShipEffectsManager EffectsManager;
 
-        private ICommanderCommander _commanderCommander;
+        private ICommander _commander;
         private bool _isInitialized;
         private ShipData _calculatedShipData;
         private ShipClickHandler _clickHandler;
@@ -59,18 +59,22 @@ namespace ShipLogic
             }
 
             InitSkin(builder.Data);
-            _commanderCommander = GetNewCommander();
+            _commander = builder.Commander;
 
             _isInitialized = true;
             PlayerType = builder.PlayerType;
-            Detector.Init(builder.PlayerType, this);
+            Detector.Init(this);
 
             EffectsManager.Init();
             // Инициализация цвета
             Renderer.material = Main.Instance.MaterialStorage.GetMaterialForShip(PlayerType);
-            
+
             // Добавление корабля на карту
             SpaceMap.Map.AddObjectOnMap(this);
+
+            // Загружаем уровень важности (вес) корабля
+            Main.Instance.LoaderManager.LoadAsync<WeightsLoader>(
+                loader => { ThreatLevel = loader.GetWeightForSelectedShip(Type); }, false);
         }
 
         public void InitCache(Action addShipInCache)
@@ -78,11 +82,8 @@ namespace ShipLogic
             _addShipInCache = addShipInCache;
         }
 
-
-        protected abstract ICommanderCommander GetNewCommander();
-
         // Эта штука в совокупностью CanAttackOtherShip создают баги
-        public bool SeeOtherShipDistance(IDetectedObject ship)
+        public bool SeeOtherShipDistance(IObjectOnMap ship)
         {
             return Vector3.Distance(ObjectPosition, ship.ObjectPosition) <= Detector.Radius;
         }
@@ -94,8 +95,8 @@ namespace ShipLogic
             var angleRotation = Vector3.Angle(direction, transform.forward);
             return angleRotation <= MinAngleRotation;
         }
-        
-        public bool IsDistanceToAttack(IDetectedObject ship)
+
+        public bool IsDistanceToAttack(IObjectOnMap ship)
         {
             var distanceByShip = Vector3.Distance(ObjectPosition, ship.ObjectPosition);
             return distanceByShip > Radius && distanceByShip <= Detector.Radius;
@@ -105,8 +106,8 @@ namespace ShipLogic
         {
             return ObjectPosition;
         }
-        
-        public abstract bool CanAttackOtherShip(IDetectedObject ship);
+
+        public abstract bool CanAttackOtherShip(IObjectOnMap ship);
 
 
         public abstract IReadOnlyCollection<Vector3> GetPointsInSector();
@@ -116,15 +117,15 @@ namespace ShipLogic
             gameObject.SetActive(true);
         }
 
-        public ICommanderCommander GetCommander()
+        public ICommander GetCommander()
         {
-            if (_commanderCommander == null)
+            if (_commander == null)
             {
                 Debug.LogError("Commander is null");
                 return null;
             }
 
-            return _commanderCommander;
+            return _commander;
         }
 
         public void Hide()
@@ -134,8 +135,9 @@ namespace ShipLogic
             TurnOffEngine();
             Gun.Dispose();
             // При уничтожение корабля теряем командира
-            _commanderCommander.Dispose();
-            _commanderCommander = null;
+            _commander.Dispose();
+            _commander = null;
+            Detector.Dispose();
 
             gameObject.SetActive(false);
         }
@@ -227,27 +229,27 @@ namespace ShipLogic
             {
                 return;
             }
-            
-            if (_commanderCommander == null)
+
+            if (_commander == null)
             {
                 return;
             }
-            
+
             Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(_commanderCommander.GetPointForMovement(), 1.5f);
+            Gizmos.DrawSphere(_commander.GetPointForMovement(), 1.5f);
 
             Gizmos.color = new Color(1, 0, 0, 0.6f);
-            foreach (var enemy in _commanderCommander.GetFoundEnemies())
+            foreach (var enemy in Detector.Enemies)
             {
                 Gizmos.DrawSphere(enemy.ObjectPosition, enemy.Radius);
             }
-            
+
             Gizmos.color = new Color(0, 1, 0, 0.6f);
-            foreach (var ally in _commanderCommander.GetFoundAllies())
+            foreach (var ally in Detector.Allies)
             {
                 Gizmos.DrawSphere(ally.ObjectPosition, ally.Radius);
             }
-            
+
             Gizmos.color = Color.blue;
             if (Engine?.PathDebug == null || Engine.PathDebug.Length == 0)
             {

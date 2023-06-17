@@ -1,16 +1,16 @@
 ﻿using System;
 using Map;
 using Players;
-using SpaceObjects;
 
-namespace Planets.MiningPlayer
+namespace Planets.MiningPlanet
 {
-    public interface IMiningPlanet : IObjectOnMap, ITarget
+    public interface IMiningPlanet : IPlanet
     {
         /// <summary>
         /// Обновление времени сколько осталось до захвата
         /// </summary>
         event Action<float> OnUpdateRemainingTimeCatch;
+
         /// <summary>
         /// Игрок, который сейчас захватывает точку
         /// </summary>
@@ -20,10 +20,10 @@ namespace Planets.MiningPlayer
         /// Обновление времени сколько осталось до получения монет заданного игрока
         /// </summary>
         event Action<PlayerType, float> OnUpdateRemainingTimeExtraction;
-        
+
         float CaptureTime { get; }
 
-        void AddFoundShip(IDetectedObject detectedObject);
-        void RemoveFoundShip(IDetectedObject detectedObject);
+        void AddFoundShip(IObjectOnMap detectedObject);
+        void RemoveFoundShip(IObjectOnMap detectedObject);
     }
 }

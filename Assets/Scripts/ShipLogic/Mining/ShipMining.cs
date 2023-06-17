@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using ShipLogic.Strategy.Attack;
-using SpaceObjects;
+using Map;
 using UnityEngine;
 
 namespace ShipLogic.Mining
 {
     public class ShipMining : ShipBase
     {
-        public override float ThreatLevel => 1.0f;
         public override ShipType Type => ShipType.Mining;
         protected override float MinAngleRotation => 5f;
-
-        protected override ICommanderCommander GetNewCommander()
-        {
-            return new MiningCommander(this, new MiningAttackLogic(this));
-        }
-
-        public override bool CanAttackOtherShip(IDetectedObject ship)
+        
+        public override bool CanAttackOtherShip(IObjectOnMap ship)
         {
             return false;
         }

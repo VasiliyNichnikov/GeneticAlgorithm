@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Loaders;
+using Map;
 using SpaceObjects;
 using UnityEngine;
 
@@ -7,15 +9,9 @@ namespace ShipLogic.AircraftCarrier
     public class ShipAircraftCarrier : ShipBase
     {
         protected override float MinAngleRotation => 5f;
-        public override float ThreatLevel => 1.0f;
         public override ShipType Type => ShipType.AircraftCarrier;
 
-        protected override ICommanderCommander GetNewCommander()
-        {
-            return new AircraftCarrierCommander(this);
-        }
-
-        public override bool CanAttackOtherShip(IDetectedObject ship)
+        public override bool CanAttackOtherShip(IObjectOnMap ship)
         {
             return SeeSelectedPointAngle(ship.ObjectPosition) && SeeOtherShipDistance(ship);
         }

@@ -5,33 +5,33 @@ namespace ShipLogic.AircraftCarrier.States
     public class PreparingForAttackState : StateBase
     {
         public override string NameState => "Prepare for attack";
-        private readonly ICommanderCommander _commanderCommander;
+        private readonly ICommander _commander;
 
 
-        public PreparingForAttackState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
+        public PreparingForAttackState(StateMachine machine, ICommander commander) : base(machine)
         {
-            _commanderCommander = commanderCommander;
+            _commander = commander;
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
             
-            if (!_commanderCommander.HasEnemy)
+            if (!_commander.HasEnemy)
             {
-                Machine.ChangeState(_commanderCommander.Movement);
+                Machine.ChangeState(_commander.Movement);
                 return;   
             }
             
-            if (!_commanderCommander.CanAttackOtherEnemyShip())
+            if (!_commander.CanAttackOtherEnemyShip())
             {
                 // todo нужно тогда и двигаться к цели
                 // _commander.MoveToSelectedPoint();
-                _commanderCommander.TurnToEnemyShip();
+                _commander.TurnToEnemyShip();
                 return;
             }
 
-            Machine.ChangeState(_commanderCommander.Attack);
+            Machine.ChangeState(_commander.Attack);
         }
     }
 }

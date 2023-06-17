@@ -6,41 +6,41 @@ namespace ShipLogic.MainStates
     {
         public override string NameState => "Preparing for attack";
 
-        private readonly ICommanderCommander _commanderCommander;
+        private readonly ICommander _commander;
         
-        public PreparingForAttackState(StateMachine machine, ICommanderCommander commanderCommander) : base(machine)
+        public PreparingForAttackState(StateMachine machine, ICommander commander) : base(machine)
         {
-            _commanderCommander = commanderCommander;
+            _commander = commander;
         }
 
         public override void Enter()
         {
             base.Enter();
-            _commanderCommander.TurnOnEngine();
+            _commander.TurnOnEngine();
         }
 
         public override void UpdateLogic()
         {
             base.UpdateLogic();
 
-            if (!_commanderCommander.HasEnemy)
+            if (!_commander.HasEnemy)
             {
-                Machine.ChangeState(_commanderCommander.Movement);
+                Machine.ChangeState(_commander.Movement);
                 return;
             }
 
-            if (!_commanderCommander.IsDistanceToAttack())
+            if (!_commander.IsDistanceToAttack())
             {
-                _commanderCommander.MoveToSelectedPoint();
+                _commander.MoveToSelectedPoint();
             }
             
-            if (!_commanderCommander.CanAttackOtherEnemyShip())
+            if (!_commander.CanAttackOtherEnemyShip())
             {
-                _commanderCommander.TurnToEnemyShip();
+                _commander.TurnToEnemyShip();
                 return;
             }
 
-            Machine.ChangeState(_commanderCommander.Attack);
+            Machine.ChangeState(_commander.Attack);
         }
     }
 }

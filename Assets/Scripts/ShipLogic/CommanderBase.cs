@@ -1,20 +1,16 @@
-﻿using System.Collections.Generic;
-using CommandsShip;
+﻿using CommandsShip;
 using Map;
 using Planets;
 using ShipLogic.Strategy.Attack;
-using SpaceObjects;
 using StateMachineLogic;
 using UnityEngine;
 
 namespace ShipLogic
 {
-    public abstract class CommanderBase : ICommanderCommander
+    public abstract class CommanderBase : ICommander
     {
         public float HealthPercentages => Ship.Health.CurrentHealthPercentages;
         public bool IsInBattle => HasEnemy;
-        public int NumberOfEnemiesNearby => _shipAttackLogic.NumberEnemies;
-        public int NumberOfAlliesNearby => _shipAttackLogic.NumberAllies;
         public ITarget ShipTarget => Ship;
         public Vector3 PositionShip => Ship.ObjectPosition;
 
@@ -45,26 +41,15 @@ namespace ShipLogic
             _shipAttackLogic = attackLogic;
             
             _teamManager = new TeamManager(this);
-            _weightCalculator = new WeightCalculator(ship.Type, _shipAttackLogic);
+            _weightCalculator = new WeightCalculator(ship.GetDetector());
 
             InitStateMachineAndStates();
             SpaceMap.Map.OnMoveNonStaticObjects += CustomUpdate;
-            Main.Instance.ShipFactory.OnDestroyShip += RemoveFoundEnemy;
         }
 
         protected abstract void InitStateMachineAndStates();
 
         public abstract void SetPointForMovement(ITarget target);
-
-        public void AddFoundEnemy(IDetectedObject detectedObject)
-        {
-            _shipAttackLogic.AddFoundShip(detectedObject);
-        }
-
-        public void RemoveFoundEnemy(IDetectedObject detectedObject)
-        {
-            _shipAttackLogic.RemoveFoundShip(detectedObject);
-        }
 
         public bool NeedEscapeFromBattle()
         {
@@ -218,16 +203,6 @@ namespace ShipLogic
         {
             return Route.GetPointForMovement();
         }
-
-        public IEnumerable<ShipBase> GetFoundEnemies()
-        {
-            return _shipAttackLogic.Enemies;
-        }
-
-        public IEnumerable<ShipBase> GetFoundAllies()
-        {
-            return _shipAttackLogic.Allies;
-        }
 #endif
 
         public virtual void Dispose()
@@ -237,7 +212,7 @@ namespace ShipLogic
                 SpaceMap.Map.OnMoveNonStaticObjects -= CustomUpdate;
             }
             
-            Main.Instance.ShipFactory.OnDestroyShip -= RemoveFoundEnemy;
+            // Main.Instance.ShipFactory.OnDestroyShip -= RemoveFoundEnemy;
             _shipAttackLogic.Dispose();
             _shipAttackLogic = null;
         }

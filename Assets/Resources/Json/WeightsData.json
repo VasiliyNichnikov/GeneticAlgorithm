@@ -2,106 +2,36 @@
   "Comment": "Файл содержит информацию о весах. Вес зависит от типа объекта",
   "MinWeight": 0,
   "MaxWeight": 1,
-  "WeightShips": [
+  "Weights": [
     {
+      "MapObjectType": "Ship",
       "ShipType": "Stealth",
-      "Weights": [
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Stealth",
-          "Weight": 0.01
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Fighter",
-          "Weight": 0.05
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "AircraftCarrier",
-          "Weight": 0.07
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Mining",
-          "Weight": 0.1
-        }
-      ]
+      "Weight": 0.01
     },
     {
+      "MapObjectType": "Ship",
       "ShipType": "Fighter",
-      "Weights": [
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Stealth",
-          "Weight": 0.01
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Fighter",
-          "Weight": 0.05
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "AircraftCarrier",
-          "Weight": 0.07
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Mining",
-          "Weight": 0.1
-        }
-      ]
+      "Weight": 0.05
     },
     {
+      "MapObjectType": "Ship",
       "ShipType": "AircraftCarrier",
-      "Weights": [
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Stealth",
-          "Weight": 0.01
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Fighter",
-          "Weight": 0.05
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "AircraftCarrier",
-          "Weight": 0.07
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Mining",
-          "Weight": 0.1
-        }
-      ]
+      "Weight": 0.07
     },
     {
+      "MapObjectType": "Ship",
       "ShipType": "Mining",
-      "Weights": [
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Stealth",
-          "Weight": 0.05
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Fighter",
-          "Weight": 0.2
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "AircraftCarrier",
-          "Weight": 0.2
-        },
-        {
-          "MapObjectType": "Ship",
-          "ShipType": "Mining",
-          "Weight": 0.05
-        }
-      ]
+      "Weight": 0.1
+    },
+    {
+      "MapObjectType": "Planet",
+      "PlanetType": "Mining",
+      "Weight": 0.35
+    },
+    {
+      "MapObjectType": "Planet",
+      "PlanetType": "Player",
+      "Weight": 0
     }
   ]
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DebugShip;
+using Map;
 using SpaceObjects;
 using UnityEngine;
 
@@ -8,19 +9,9 @@ namespace ShipLogic.Fighter
     public class ShipFighter : ShipBase
     {
         protected override float MinAngleRotation => 5f;
-        public override float ThreatLevel => 0.5f;
         public override ShipType Type => ShipType.Fighter;
         
-        protected override ICommanderCommander GetNewCommander()
-        {
-            if (Main.Instance.IsDebugMode)
-            {
-                return new DebugFighterCommander(this);
-            }
-            return new FighterCommander(this);
-        }
-
-        public override bool CanAttackOtherShip(IDetectedObject ship)
+        public override bool CanAttackOtherShip(IObjectOnMap ship)
         {
             return SeeSelectedPointAngle(ship.ObjectPosition) && SeeOtherShipDistance(ship);
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Group;
+using Loaders;
 using Map;
 using Players;
 using ShipLogic.Editor;
@@ -13,15 +14,16 @@ namespace Planets.PlayerPlanet
 {
     public class PlayerPlanet : MonoBehaviour, IPlayerPlanet, PlanetClickHandler.IPlanetClick
     {
-        public float ThreatLevel => 1.0f;
+        public float ThreatLevel { get; private set; }
         public MapObjectType TypeObject => MapObjectType.Planet;
+        public PlayerType PlayerType => _player;
         public bool IsStatic => true;
         public Vector3 ObjectPosition => transform.position;
         public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
         public Vector3 RightTopPosition => _perimeter.RightTopPoint;
         public float CurrentGold => _goldManager.CurrentGold;
-        public PlayerType Player => _player;
-
+        public PlanetType Type => PlanetType.Player;
+        
         [SerializeField] private PlayerType _player;
         [SerializeField] private ShipCharacteristics[] _characteristics;
         [SerializeField] private Transform _startingPoint;
@@ -44,6 +46,11 @@ namespace Planets.PlayerPlanet
             _goldManager = new PlayerGoldManager(500);
             _clickHandler.Init(this);
             InitMaterial();
+
+            Main.Instance.LoaderManager.LoadAsync<WeightsLoader>(loader =>
+            {
+                ThreatLevel = loader.GetWeightForSelectedPlanet(Type);
+            }, false);
         }
 
         

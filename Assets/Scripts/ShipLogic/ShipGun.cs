@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Map;
 using SpaceObjects;
 using UnityEngine;
 
@@ -7,8 +8,8 @@ namespace ShipLogic
 {
     public interface IShipGun : IDisposable
     {
-        bool AttackingSelectedTarget(IDetectedObject selectedTarget);
-        void SetTarget(IDetectedObject target);
+        bool AttackingSelectedTarget(IObjectOnMap selectedTarget);
+        void SetTarget(IObjectOnMap target);
         void StartShoot();
         void FinishShoot();
         void Shoot();
@@ -22,7 +23,7 @@ namespace ShipLogic
         
         private readonly MonoBehaviour _ship;
         private readonly GunPoint[] _gunpoints; // Точка вылета снаряда
-        private IDetectedObject _target; // Объект, в который будем стрелять
+        private IObjectOnMap _target; // Объект, в который будем стрелять
 
         private IEnumerator _rechargeCheck;
         private float _rechargeTime;
@@ -37,12 +38,12 @@ namespace ShipLogic
             DeactivateGunpoints();
         }
 
-        public bool AttackingSelectedTarget(IDetectedObject selectedTarget)
+        public bool AttackingSelectedTarget(IObjectOnMap selectedTarget)
         {
             return _target != null && _target.Equals(selectedTarget);
         }
 
-        public void SetTarget(IDetectedObject target)
+        public void SetTarget(IObjectOnMap target)
         {
             if (Equals(_target, target))
             {

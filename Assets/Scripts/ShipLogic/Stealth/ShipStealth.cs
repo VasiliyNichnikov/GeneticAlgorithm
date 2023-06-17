@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using SpaceObjects;
+﻿using System;
+using System.Collections.Generic;
+using Map;
 using UnityEngine;
 
 namespace ShipLogic.Stealth
@@ -7,22 +8,16 @@ namespace ShipLogic.Stealth
     public class ShipStealth : ShipBase
     {
         protected override float MinAngleRotation => 5f;
-        public override float ThreatLevel => 0.2f;
         public override ShipType Type => ShipType.Stealth;
 
-        protected override ICommanderCommander GetNewCommander()
-        {
-            return new StealthCommander(this);
-        }
-
-        public override bool CanAttackOtherShip(IDetectedObject ship)
+        public override bool CanAttackOtherShip(IObjectOnMap ship)
         {
             return SeeSelectedPointAngle(ship.ObjectPosition) && SeeOtherShipDistance(ship);
         }
 
         public override IReadOnlyCollection<Vector3> GetPointsInSector()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }
