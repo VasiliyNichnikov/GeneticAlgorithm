@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace Group
 {
+    /// <summary>
+    /// todo сейчас с группами есть проблемы при большом кол-ве кораблей
+    /// </summary>
     public class ShipGroup : IShipGroup
     {
         public bool IsAlive => _ships.Count > 0;
@@ -36,6 +39,7 @@ namespace Group
         {
             if (_ships.Contains(ship))
             {
+                Debug.LogError("Current ship is contains in list");
                 return;
             }
 
@@ -79,14 +83,13 @@ namespace Group
                 return;
             }
             
-            var positions = SpaceMap.Map.TryGetRandomEmptyPointsAroundPosition(_targetForMovement.GetPointToApproximate(), _ships.Count, 2, out var isFound);
+            var positions = SpaceMap.Map.TryGetRandomEmptyPointsAroundObject(_targetForMovement.GetPointToApproximate(), _ships.Count, 2, out var isFound);
             var positionArray = positions.ToArray();
             if (positionArray.Length != _ships.Count)
             {
                 Debug.LogError($"Number positions not equal number ships. Position array: {positionArray.Length}. Ships: {_ships.Count}");
                 return;
             }
-
             OnUpdatePositionsInGroup?.Invoke(positionArray);
         }
 

@@ -19,9 +19,16 @@ namespace ShipLogic.Strategy.Attack
 
         public void CheckEnemiesForOpportunityToAttack()
         {
+            // todo костыль, но по нормальному сейчас не могу придумать
+            if (_logicBase.SelectedEnemy != null && !_detector.Enemies.Contains(_logicBase.SelectedEnemy))
+            {
+                _logicBase.LosingSelectedEnemy();
+                return;
+            }
+            
             if (_logicBase.SelectedEnemy != null && _logicBase.SelectedEnemy.IsDead)
             {
-                _detector.TryRemoveFoundShip(_logicBase.SelectedEnemy);
+                _logicBase.LosingSelectedEnemy();
             }
 
             if (_logicBase.SelectedEnemy != null && _logicBase.SelectedEnemy.Gun.AttackingSelectedTarget(_ship))

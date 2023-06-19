@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace CommandsShip
 {
-    public class MovementCommand : ICommandLogic
+    public class ToHelpCommand : ICommandLogic
     {
         private readonly ICommander _commander;
         
-        public MovementCommand(ICommander commander)
+        public ToHelpCommand(ICommander commander)
         {
             _commander = commander;
         }
@@ -21,7 +21,7 @@ namespace CommandsShip
                 return;
             }
             
-            _commander.SetPointForMovement(command.Target);
+            _commander.SetPointToHelp(command.Target);
         }
     }
 }

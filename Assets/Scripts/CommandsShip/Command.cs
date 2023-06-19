@@ -13,7 +13,8 @@ namespace CommandsShip
             Movement, // Двигаться к точке
             Protection, // Защищать точку
             Help,  // Попросить помощь
-            EscapeFromBattle // Покинуть бой
+            EscapeFromBattle, // Покинуть бой,
+            ToHelp // Прийти на помощь
         }
 
         public enum PriorityType
@@ -33,14 +34,13 @@ namespace CommandsShip
             return new Command(PlayerType.None, PriorityType.Low, CommandType.Movement, pointForMovement);
         }
 
-        public static Command Protection()
+        public static Command MovementToHelp(ITarget pointForMovement)
         {
-            throw new Exception("Поддержать");
+            return new Command(PlayerType.None, PriorityType.High, CommandType.ToHelp, pointForMovement);
         }
-
+        
         public static Command Help(PlayerType playerType, ITarget pointForHelp)
         {
-            Debug.LogWarning($"Help: {playerType}");
             return new Command(playerType, PriorityType.Medium, CommandType.Help, pointForHelp);
         }
 

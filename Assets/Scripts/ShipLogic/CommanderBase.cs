@@ -67,11 +67,18 @@ namespace ShipLogic
             }
             
             CheckPointForMovement();
+            AdditionalCheckInUpdate();
+            
             _shipAttackLogic.CheckEnemiesForOpportunityToAttack();
 
             Machine.CurrentState.UpdateLogic();
         }
 
+        protected virtual void AdditionalCheckInUpdate()
+        {
+            // Можно вызвать свои действия в дочернем объекте
+        }
+        
         private void CheckPointForMovement()
         {
             if (!HasPointForMovement)
@@ -186,6 +193,11 @@ namespace ShipLogic
         {
             Machine.ChangeState(Idle);
         }
+        
+        public void SetPointToHelp(ITarget target)
+        {
+            Route.AddPointToHelp(target.GetPointToApproximate());
+        }
 
         public virtual void SetPointForMovementToEnemy(ITarget target)
         {
@@ -198,7 +210,6 @@ namespace ShipLogic
         }
 
 #if UNITY_EDITOR
-
         public Vector3 GetPointForMovement()
         {
             return Route.GetPointForMovement();

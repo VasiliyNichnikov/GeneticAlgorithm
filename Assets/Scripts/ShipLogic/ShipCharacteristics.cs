@@ -20,7 +20,7 @@ namespace ShipLogic.Editor
         [SerializeField] private float _visibilityRadius;
         [SerializeField] private float _gunPower;
         [SerializeField] private float _armor;
-        [SerializeField] public bool _isMiningShip;
+        [SerializeField] private bool _isMiningShip;
 
         public ShipData ConvertToShipData()
         {

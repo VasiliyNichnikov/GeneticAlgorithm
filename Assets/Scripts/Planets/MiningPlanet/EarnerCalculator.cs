@@ -24,12 +24,16 @@ namespace Planets.MiningPlanet
             private readonly float _minimumTimeLeft;
             private readonly float _maximumTimeLeft;
             private readonly float _percentageForNumberShipsInZone;
+            private readonly float _amountOfGoldPerExtraction;
 
             private float _percentageMining;
             private int _numberShipsInZone;
             private readonly Action<float> _onGoldCollected;
 
-            public MiningLogic(float minimumTimeLeft, float maximumTimeLeft, float percentageForNumberShipsInZone,
+            public MiningLogic(float minimumTimeLeft, 
+                float maximumTimeLeft, 
+                float percentageForNumberShipsInZone,
+                float amountOfGoldPerExtraction,
                 int startingNumberShipsInZone, Action<float> onGoldCollected)
             {
                 if (startingNumberShipsInZone <= 0)
@@ -42,6 +46,7 @@ namespace Planets.MiningPlanet
                     _numberShipsInZone = startingNumberShipsInZone;
                 }
 
+                _amountOfGoldPerExtraction = amountOfGoldPerExtraction;
                 _minimumTimeLeft = minimumTimeLeft;
                 _maximumTimeLeft = maximumTimeLeft;
                 _percentageForNumberShipsInZone = percentageForNumberShipsInZone;
@@ -70,7 +75,7 @@ namespace Planets.MiningPlanet
                 _timeLeft = _timeLeftWithoutPercentage - (_maximumTimeLeft - _minimumTimeLeft) * _percentageMining;
                 if (_timeLeft <= 0)
                 {
-                    _onGoldCollected?.Invoke(10);
+                    _onGoldCollected?.Invoke(_amountOfGoldPerExtraction);
                     _timeLeft = _maximumTimeLeft;
                     _timeLeftWithoutPercentage = _maximumTimeLeft;
                 }
@@ -174,6 +179,7 @@ namespace Planets.MiningPlanet
                     loader.GetMinimumTimeMining(),
                     loader.GetMaximumTimeMining(),
                     loader.AccelerationPercentageForEachShip(),
+                    loader.GetAmountOfGoldPerExtraction(),
                     numberShipsInZone,
                     gold => OnGoldCollectedAction(player, gold));
                 _playersMiningData[player] = miningLogic;

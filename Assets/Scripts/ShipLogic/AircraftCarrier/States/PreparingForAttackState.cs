@@ -16,13 +16,13 @@ namespace ShipLogic.AircraftCarrier.States
         public override void UpdateLogic()
         {
             base.UpdateLogic();
-            
+
             if (!_commander.HasEnemy)
             {
                 Machine.ChangeState(_commander.Movement);
-                return;   
+                return;
             }
-            
+
             if (!_commander.CanAttackOtherEnemyShip())
             {
                 // todo нужно тогда и двигаться к цели

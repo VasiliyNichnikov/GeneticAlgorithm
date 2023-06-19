@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Planets;
 using Players;
 using ShipLogic;
 using UnityEngine;
@@ -34,7 +35,7 @@ namespace Map
 
         private void Init()
         {
-            _sectorHandler = new SectorHandler(_gridSettings);
+            _sectorHandler = new SectorHandler(this, _gridSettings);
             
             _gridForMovement = _gridSettings.GridForMovement;
             GridViewing = new GridViewing(_gridSettings, transform, _heatMapVisualPrefab);
@@ -54,7 +55,7 @@ namespace Map
             // Отрисовываем заново все движущиеся объекты
             DrawNotStaticObjectOnGrid();
             
-            // Пересчитываем веса
+            // Пересчитываем веса (мб слишком много требует ресурсов)
             _sectorHandler.CheckAndUpdateWeightsInSectors();
         }
 
@@ -112,16 +113,17 @@ namespace Map
             return emptyPoints[randomPoint];
         }
 
-        public IEnumerable<Vector3> TryGetRandomEmptyPointsAroundPosition(Vector3 position, int numberPoints, int range, out bool isFound)
+        // todo тут путь не всегда находится и из-за этого все летят в центр карты
+        public IEnumerable<Vector3> TryGetRandomEmptyPointsAroundObject(Vector3 position, int numberPoints, int range, out bool isFound)
         {
-            var emptyPoints =
-                _gridForMovement.GetEmptyPointsAroundSelectedObject(position, (int)MapObjectType.Empty, range);
-            isFound = emptyPoints.Length != 0;
+            var emptyPoints = _gridForMovement.GetEmptyPointsAroundSelectedObject(position, (int)MapObjectType.Empty, range);
+            isFound = emptyPoints.Length > numberPoints;
+            
             if (!isFound)
             {
-                return new[] { Vector3.zero };
+                return new[] { position };
             }
-
+            
             numberPoints = Mathf.Min(numberPoints, emptyPoints.Length);
             var randomPoints = new List<int>();
             while (randomPoints.Count != numberPoints)
@@ -204,7 +206,6 @@ namespace Map
             var endNode = Node.Create(endGridPoint);
             var reachable = new List<Node> { Node.Create(startGridPoint) };
             var explored = new List<Node>();
-
             while (reachable.Count > 0)
             {
                 var node = ChoosePoint(reachable, endGridPoint);
@@ -272,13 +273,6 @@ namespace Map
             return selectedNode ?? reachable[0];
         }
 
-        public (int x, int z) GetIndexSectorForObjectOnMap(IPosition positionObject)
-        {
-            _gridSettings.GetGridPlayerForSector(PlayerType.Player1)!.GetXZ(positionObject.ObjectPosition, out var x, out var z);
-            return (x, z);
-        }
-
-
         private IEnumerable<Node> GetAdjacentNodes(Vector3Int point, Vector3Int endGridPosition, List<Node> explored)
         {
             var x = point.x;
@@ -319,19 +313,47 @@ namespace Map
 
         /// <summary>
         /// Возвращает все точки, которые принадлежат сектору
+        /// Внимание: в данном случае мы не смотрим на тип сектора и по дефолту выбираем Player1
         /// </summary>
-        public IReadOnlyCollection<Vector3> GetObjectOnMapPointsInSectors(IObjectOnMap objectOnMap,
-            Func<MapObjectType, bool> additionCheck = null)
+        public IReadOnlyCollection<Vector3> GetObjectOnMapPointsInSectors(IObjectOnMap objectOnMap)
         {
-            var result = new List<Vector3>();
-
             var sectors = _gridSettings.GetGridPlayerForSector(PlayerType.Player1)!.GetPositionsOfCellsAroundPerimeter(
                     objectOnMap.RightTopPosition,
                     objectOnMap.LeftBottomPosition);
+            
+            return GetPointsForMovementInSectors(sectors, objectType => objectType == MapObjectType.Empty);
+        }
 
+        
+        public IReadOnlyCollection<Vector3> GetPointsForMovementInSector(GridPlayerSector grid, Vector3 objectPosition)
+        {
+            bool Check(MapObjectType objectType)
+            {
+                var random = Random.Range(0.0f, 1.0f);
+                return random >= 0.3f && objectType == MapObjectType.Empty;
+            }
+            
+            var sectorInt = grid.GetXZ(objectPosition);
+            return GetPointsForMovementInSectors(sectorInt.ToEnumerable(), Check);
+        }
+
+        public ITarget GetSectorWithHighWeightForShip(PlayerType player)
+        {
+            return _sectorHandler.GetSectorWithHighWeightForShip(player);
+        }
+
+        public ITarget GetSectorForSelectedShip(PlayerType player, ICommanderInfo commander)
+        {
+            return _sectorHandler.GetSectorForSelectedShip(player, commander);
+        }
+        
+        private IReadOnlyCollection<Vector3> GetPointsForMovementInSectors(IEnumerable<Vector3Int> sectors, Func<MapObjectType, bool> overrideCheck = null)
+        {
+            var result = new List<Vector3>();
+            
             var difference = DiffBetweenMovementAndSector();
 
-            var hasAdditionalCheck = additionCheck != null;
+            var hasOverrideCheck = overrideCheck != null;
 
             foreach (var sector in sectors)
             {
@@ -345,9 +367,9 @@ namespace Map
                 {
                     for (var z = startZ; z < endZ; z++)
                     {
-                        if (hasAdditionalCheck)
+                        if (hasOverrideCheck)
                         {
-                            if (additionCheck.Invoke((MapObjectType)_gridForMovement.GetValue(x, z)))
+                            if (overrideCheck.Invoke((MapObjectType)_gridForMovement.GetValue(x, z)))
                             {
                                 result.Add(_gridForMovement.GetWorldPosition(x, z));
                             }

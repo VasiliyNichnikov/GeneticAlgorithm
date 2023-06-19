@@ -20,8 +20,6 @@ namespace CommandsShip
                 Debug.LogError("Target is null");
                 return;
             }
-
-            Debug.LogWarning("Command: EscapeFromBattleCommand");
             _commander.SetPointForEscapeFromBattle(command.Target);
         }
     }

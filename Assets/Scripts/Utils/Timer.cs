@@ -5,6 +5,8 @@ namespace Utils
 {
     public class Timer : IDisposable
     {
+        public float CurrentTime => _currentTime;
+        
         private float _currentTime;
         private readonly float _time;
         private readonly Action _onCompleteAction;
@@ -34,7 +36,7 @@ namespace Utils
             }
         }
 
-        public void Start()
+        private void Start()
         {
             _currentTime = _time;
             if (!IsRunning)

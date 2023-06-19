@@ -12,10 +12,11 @@ namespace Loaders
         {
             MinimumTimeMining,
             MaximumTimeMining,
-            AccelerationPercentageForEachShip
+            AccelerationPercentageForEachShip,
+            AmountOfGoldPerExtraction
         }
 
-        private readonly Dictionary<ParameterType, float> _parameters = new Dictionary<ParameterType, float>();
+        private readonly Dictionary<ParameterType, float> _parameters = new();
         private const string PathFile = "Json/MiningData";
 
         public float GetMinimumTimeMining()
@@ -31,6 +32,11 @@ namespace Loaders
         public float AccelerationPercentageForEachShip()
         {
             return GetValueFromParameters(ParameterType.AccelerationPercentageForEachShip);
+        }
+
+        public float GetAmountOfGoldPerExtraction()
+        {
+            return GetValueFromParameters(ParameterType.AmountOfGoldPerExtraction);
         }
         
         

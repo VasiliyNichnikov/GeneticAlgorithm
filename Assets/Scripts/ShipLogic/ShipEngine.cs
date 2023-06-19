@@ -1,4 +1,5 @@
-﻿using Map;
+﻿using System;
+using Map;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -50,6 +51,7 @@ namespace ShipLogic
             float speed,
             float rotationSpeed)
         {
+            _pathForMovement = Array.Empty<Vector3>();
             _shipTransform = shipTransform;
             _agent = agent;
             _movementSpeed = speed;
@@ -128,7 +130,6 @@ namespace ShipLogic
             if (_pathIteration >= _pathForMovement.Length)
             {
                 _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
-                _agent.isStopped = true;
                 return;
             }
 
@@ -136,7 +137,7 @@ namespace ShipLogic
   
             _shipTransform.position = endPosition;
             _destination = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
-            _agent.isStopped = true;
+            _pathForMovement = Array.Empty<Vector3>();
         }
 
         private void SetAgentPosition()

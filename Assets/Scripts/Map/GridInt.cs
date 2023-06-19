@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Map
@@ -24,46 +23,8 @@ namespace Map
 
             return result;
         }
-        
-        public Vector3[] GetEmptyPointsAroundSelectedObject(Vector3 worldPosition, int emptyValue, int range)
-        {
-            void CheckAndAddPointOnList(int x, int z, List<Vector3> points)
-            {
-                var value = GetValue(x, z);
-                if (value == emptyValue)
-                {
-                    var pointWorldPosition = GetWorldPositionCenterCell(new Vector3Int(x, 0, z));
-                    points.Add(pointWorldPosition);
-                }
-            }
-            var result = new List<Vector3>();
-            
-            GetXZ(worldPosition, out var originX, out var originZ);
-            for (var x = 0; x < range; x++)
-            {
-                for (var z = 0; z < range - x; z++)
-                {
-                    CheckAndAddPointOnList(originX + x, originZ + z, result);
-                    if (x != 0)
-                    {
-                        CheckAndAddPointOnList(originX - x, originZ + z, result);
-                    }
 
-                    if (z != 0)
-                    {
-                        CheckAndAddPointOnList(originX + x, originZ - z, result);
-                        if (x != 0)
-                        {
-                            CheckAndAddPointOnList(originX - x, originZ - z, result);
-                        }
-                    }
-                }
-            }
 
-            return result.ToArray();
-        }
-        
-        
         public void SetValuesAroundPerimeter(Vector3 pointOne, Vector3 pointTwo, int value)
         {
             if (value == (int)MapObjectType.Empty)
@@ -104,6 +65,21 @@ namespace Map
             SetValue(x, z, GetValue(x, z) + value);
         }
 
+        public Vector3[] GetEmptyPointsAroundSelectedObject(Vector3 worldPosition, int emptyValue, int range)
+        {
+            void CheckAndAddPointOnList(int x, int z, List<Vector3> points)
+            {
+                var value = GetValue(x, z);
+                if (value == emptyValue)
+                {
+                    var pointWorldPosition = GetWorldPositionCenterCell(new Vector3Int(x, 0, z));
+                    points.Add(pointWorldPosition);
+                }
+            }
+
+            return GetPointsAroundSelectedObject<Vector3>(worldPosition, range, CheckAndAddPointOnList);
+        }
+        
         protected override void SetValue(int x, int z, int value)
         {
             if (!CanAddValue(x, z, value))

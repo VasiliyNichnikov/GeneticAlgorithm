@@ -25,12 +25,12 @@ namespace Planets
 
         public void OnStartDrag()
         {
-            _planet.OnStartDrag();
+            _planet?.OnStartDrag();
         }
 
         public void OnEndDrag()
         {
-            _planet.OnEndDrag();
+            _planet?.OnEndDrag();
         }
     }
 }

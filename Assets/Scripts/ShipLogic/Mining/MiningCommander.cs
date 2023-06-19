@@ -1,4 +1,5 @@
-﻿using Planets;
+﻿using CommandsShip;
+using Planets;
 using ShipLogic.Mining.States;
 using ShipLogic.Strategy.Attack;
 using StateMachineLogic;
@@ -24,6 +25,16 @@ namespace ShipLogic.Mining
             Attack = null;
 
             Machine.Init(Idle);
+        }
+
+        protected override void AdditionalCheckInUpdate()
+        {
+            // Проверяем, что если корабль вошел в бой, отправляем сигнал SOS
+            base.AdditionalCheckInUpdate();
+            if (HealthPercentages < 0.99f)
+            {
+                ExecuteCommand(Command.Help(Ship.PlayerType, Ship));
+            }
         }
 
         public override void SetPointForMovement(ITarget target)

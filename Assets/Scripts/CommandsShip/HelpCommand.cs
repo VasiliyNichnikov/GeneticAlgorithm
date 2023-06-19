@@ -29,7 +29,7 @@ namespace CommandsShip
             var ships = SpaceMap.Map.GetAlliedShipsInRange(command.PlayerType, target.GetPointToApproximate(), _radiusOfHelp);
             foreach (var ship in ships)
             {
-                ship.GetCommander().ExecuteCommand(Command.Movement(command.Target));
+                ship.GetCommander().ExecuteCommand(Command.MovementToHelp(command.Target));
             }
         }
     }

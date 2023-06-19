@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Collections.Generic;
 using UnityEngine;
 using Utils;
 
 namespace ShipLogic
 {
+    /// <summary>
+    /// todo
+    /// Тут сейчас есть ошибка из-за чего появляется точка в нулевой координате
+    /// </summary>
     public class ShipRoute
     {
         private enum PriorityPoint
         {
             Movement = 0,
             Enemy = 1,
-            EscapeFromBattle = 2
+            EscapeFromBattle = 2,
+            ToHelp = 3
         }
 
         private readonly struct PointData
@@ -67,6 +71,12 @@ namespace ShipLogic
         public void AddPointForEscapeFromBattle(Vector3 pointPosition)
         {
             TryAddNewPoint(pointPosition, PriorityPoint.EscapeFromBattle);
+            UpdateCurrentPointForMovement();
+        }
+
+        public void AddPointToHelp(Vector3 pointPosition)
+        {
+            TryAddNewPoint(pointPosition, PriorityPoint.ToHelp);
             UpdateCurrentPointForMovement();
         }
 
@@ -138,6 +148,13 @@ namespace ShipLogic
             OnEndPointsForMovement?.Invoke();
         }
 
+        public void ClearAllPoints()
+        {
+            _pointsForMovement.Clear();
+            _currentPointForMovement = null;
+        }
+        
+        // todo не работает
         private void SaveCurrentPositionBeforeChangePoint(PriorityPoint nextPointPriority)
         {
             if (nextPointPriority != PriorityPoint.Enemy)

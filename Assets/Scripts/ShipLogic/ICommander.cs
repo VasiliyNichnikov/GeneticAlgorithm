@@ -19,8 +19,6 @@ namespace ShipLogic
         bool HasPointForMovement { get; }
         bool IsNeedStop { get; }
         string NameCurrentState { get; }
-        
-        ShipType ShipType { get; }
 
         bool NeedEscapeFromBattle();
         bool IsDistanceToAttack();
@@ -36,7 +34,8 @@ namespace ShipLogic
         void FinishShoot();
 
         void ChangeStateToIdle();
-        
+
+        void SetPointToHelp(ITarget target);
         void SetPointForMovement(ITarget target);
         void SetPointForMovementToEnemy(ITarget target);
         void SetPointForEscapeFromBattle(ITarget target);

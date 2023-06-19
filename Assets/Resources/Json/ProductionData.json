@@ -1,0 +1,25 @@
+﻿{
+  "StartingGold": 500,
+  "ShipProductions": [
+    {
+      "ShipType": "Stealth",
+      "Price": 100,
+      "Time": 5
+    },
+    {
+      "ShipType": "Fighter",
+      "Price": 100,
+      "Time": 5
+    },
+    {
+      "ShipType": "AircraftCarrier",
+      "Price": 100,
+      "Time": 5
+    },
+    {
+      "ShipType": "Mining",
+      "Price": 100,
+      "Time": 5
+    }
+  ]
+}

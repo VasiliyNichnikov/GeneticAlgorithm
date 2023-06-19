@@ -58,6 +58,7 @@ namespace ShipLogic.AircraftCarrier
             Route.AddPointForMovement(target.GetPointToApproximate());
             // todo нужно будет учитывать перезарядился или нет скачок
             // todo вынести константу в отдельную переменную
+            // todo это нужно делать долько для оказания помощи
             NeedJumpInPointForMovement = target.ThreatLevel >= 0.7f;
         }
 
@@ -99,7 +100,7 @@ namespace ShipLogic.AircraftCarrier
             _jumpTimer = null;
             // todo время нужно будет загружать из лоудера
             _jumpRechargeTimer = Timer.StartTimer(10, () => _jumpRechargeTimer = null);
-            // Route.ChangeAndGetPointForMovement();
+            Route.ClearAllPoints();
             Ship.Engine.TryJumpToLastPoint();
         }
     }

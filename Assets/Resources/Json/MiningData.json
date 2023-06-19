@@ -14,6 +14,11 @@
       "Name": "AccelerationPercentageForEachShip",
       "Value": 5,
       "Comment": "Процент ускорения за каждый корабль в зоне"
+    },
+    {
+      "Name": "AmountOfGoldPerExtraction",
+      "Value": 100,
+      "Comment": "Количество золото за каждую добычу корабля"
     }
   ]
 }

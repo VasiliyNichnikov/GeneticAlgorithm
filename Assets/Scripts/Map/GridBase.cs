@@ -173,6 +173,35 @@ namespace Map
             OnChangeCellValue?.Invoke((x, z));
         }
         
+        protected TPoint[] GetPointsAroundSelectedObject<TPoint>(Vector3 worldPosition, int range, Action<int, int, List<TPoint>> checkAndAndPointOnList) where TPoint: struct
+        {
+            var result = new List<TPoint>();
+            
+            GetXZ(worldPosition, out var originX, out var originZ);
+            for (var x = 0; x < range; x++)
+            {
+                for (var z = 0; z < range - x; z++)
+                {
+                    checkAndAndPointOnList(originX + x, originZ + z, result);
+                    if (x != 0)
+                    {
+                        checkAndAndPointOnList(originX - x, originZ + z, result);
+                    }
+
+                    if (z != 0)
+                    {
+                        checkAndAndPointOnList(originX + x, originZ - z, result);
+                        if (x != 0)
+                        {
+                            checkAndAndPointOnList(originX - x, originZ - z, result);
+                        }
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
+        
         private (Vector3Int leftBottom, Vector3Int rightTop) GetRightTopAndLeftBottom(Vector3Int pointOne, Vector3Int pointTwo)
         {
             const int y = 0;

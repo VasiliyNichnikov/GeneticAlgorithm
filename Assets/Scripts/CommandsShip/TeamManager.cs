@@ -11,9 +11,10 @@ namespace CommandsShip
         private static readonly Dictionary<Command.CommandType, List<ShipType>> CommandExecutionPermissions = new()
         {
             { Command.CommandType.EscapeFromBattle, new List<ShipType> { ShipType.Stealth } },
-            { Command.CommandType.Help, new List<ShipType> { ShipType.AircraftCarrier }}
+            { Command.CommandType.Help, new List<ShipType> { ShipType.Mining } },
+            { Command.CommandType.ToHelp, new List<ShipType> { ShipType.Fighter, ShipType.AircraftCarrier } }
         };
-        
+
         public bool IsEscapeFromBattle
         {
             get
@@ -40,7 +41,8 @@ namespace CommandsShip
             {
                 { Command.CommandType.Movement, new MovementCommand(commander) },
                 { Command.CommandType.Help, new HelpCommand() },
-                { Command.CommandType.EscapeFromBattle, new EscapeFromBattleCommand(commander) }
+                { Command.CommandType.EscapeFromBattle, new EscapeFromBattleCommand(commander) },
+                { Command.CommandType.ToHelp, new ToHelpCommand(commander) }
             };
         }
 
@@ -73,8 +75,9 @@ namespace CommandsShip
             }
 
             var checkPriority = _currentCommand.Value.SelectedPriorityType < command.SelectedPriorityType;
-            var checkPermission = (CommandExecutionPermissions.ContainsKey(command.SelectedCommand) && 
-                                   CommandExecutionPermissions[command.SelectedCommand].Contains(_commander.ShipType)) || 
+            var checkPermission = (CommandExecutionPermissions.ContainsKey(command.SelectedCommand) &&
+                                   CommandExecutionPermissions[command.SelectedCommand]
+                                       .Contains(_commander.ShipType)) ||
                                   !CommandExecutionPermissions.ContainsKey(command.SelectedCommand);
             return checkPriority && checkPermission;
         }

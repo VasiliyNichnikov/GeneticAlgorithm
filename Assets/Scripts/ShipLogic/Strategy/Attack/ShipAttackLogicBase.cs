@@ -24,6 +24,7 @@ namespace ShipLogic.Strategy.Attack
                 return;
             }
 
+            _ship.GetDetector().TryRemoveFoundShip(SelectedEnemy);
             Commander.ChangeStateToIdle();
             SelectedEnemy = null;
         }

@@ -28,11 +28,14 @@ namespace ShipLogic.MainStates
                 Machine.ChangeState(_commander.Movement);
                 return;
             }
-
-            if (!_commander.IsDistanceToAttack())
+            
+            // todo эта хуйня ломает всю игру
+            // так как в MoveToSelectedPoint есть поиск пути
+            // и при большом кол-ве кораблей все зависает
+            /*if (!_commander.IsDistanceToAttack())
             {
                 _commander.MoveToSelectedPoint();
-            }
+            }*/
             
             if (!_commander.CanAttackOtherEnemyShip())
             {

@@ -22,6 +22,7 @@ namespace Planets.MiningPlanet
             var emptyPoint = SpaceMap.Map.TryGetRandomEmptyPointAroundObject(this, 4, out var isFound);
             if (!isFound)
             {
+                // todo вот тут тоже zero из-за чего корабли могут плыть к центру карты
                 Debug.LogWarning("Not found empty point around object");
                 return Vector3.zero;
             }
@@ -31,8 +32,7 @@ namespace Planets.MiningPlanet
 
         public IReadOnlyCollection<Vector3> GetPointsInSector()
         {
-            var pointsInSector = SpaceMap.Map
-                .GetObjectOnMapPointsInSectors(this, objectType => objectType == MapObjectType.Empty).ToArray();
+            var pointsInSector = SpaceMap.Map.GetObjectOnMapPointsInSectors(this).ToArray();
 
             var randomPoints = new List<int>();
             var numberPoints = Mathf.Min(pointsInSector.Length, 10);
@@ -60,7 +60,6 @@ namespace Planets.MiningPlanet
         public event Action<float> OnUpdateRemainingTimeCatch;
         public event Action<PlayerType> OnUpdatePlayerType;
         public event Action<PlayerType, float> OnUpdateRemainingTimeExtraction;
-        public event Action<PlayerType, float> OnPlayerCollectedGold;
         public float CaptureTime => _captureTime;
         public PlanetType Type => PlanetType.Mining;
 
@@ -140,6 +139,12 @@ namespace Planets.MiningPlanet
             CheckOutPlanetForTwoPlayers();
         }
 
+        private static void OnPlayerCollectedGold(PlayerType player, float value)
+        {
+            var planet = Main.Instance.PlanetStorage.GetPlayerPlanet(player);
+            planet.AddExtractedGold(value);
+        }
+        
         private void CheckOutPlanetForTwoPlayers()
         {
             CheckOutPlanetCapture(PlayerType.Player1);

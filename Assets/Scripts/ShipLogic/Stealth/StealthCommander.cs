@@ -1,4 +1,5 @@
-﻿using Planets;
+﻿using Map;
+using Planets;
 using ShipLogic.MainStates;
 using ShipLogic.Strategy.Attack;
 using StateMachineLogic;
@@ -37,13 +38,11 @@ namespace ShipLogic.Stealth
             _target = target;
             UpdatePoints();
         }
-
+        
         private void UpdatePoints()
         {
-            if (_target == null)
-            {
-                return;
-            }
+            var target = SpaceMap.Map.GetSectorForSelectedShip(Ship.PlayerType, this);
+            _target = target.ThreatLevel > _target.ThreatLevel ? target : SpaceMap.Map.GetSectorWithHighWeightForShip(Ship.PlayerType);
             
             var points = _target.GetPointsInSector();
             Route.AddPointForMovementRange(points);

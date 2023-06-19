@@ -18,7 +18,7 @@ public class Main : MonoBehaviour
 
     public PlanetStorage PlanetStorage { get; private set; }
     public ShipFactory ShipFactory { get; private set; }
-    public PlayerBrains Players { get; set; }
+    public PlayerBrains Players { get; private set; }
     public ShipGroupManager ShipGroupManager => _shipGroupManager;
     public DialogManager DialogManager => _dialogManager;
     public MainShipParameters ShipParameters => _shipParameters;
@@ -63,6 +63,12 @@ public class Main : MonoBehaviour
         _loaderManager.AddLoaderInQueue(new MiningPlanetLoader());
         _loaderManager.AddLoaderInQueue(new SignalsLoader());
         _loaderManager.AddLoaderInQueue(new WeightsLoader());
+        _loaderManager.AddLoaderInQueue(new ProductionLoader());
+    }
+
+    private void Start()
+    {
+        Players.Start();
     }
 
     private void Update()

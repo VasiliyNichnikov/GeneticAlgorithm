@@ -1,4 +1,5 @@
 ﻿using Group;
+using Map;
 using Planets;
 using ShipLogic.MainStates;
 using ShipLogic.Strategy.Attack;
@@ -15,7 +16,7 @@ namespace ShipLogic.Fighter
     public class FighterCommander : CommanderBase, ISupportedGroup
     {
         public Vector3 ObjectPosition => PositionShip;
-        
+
         public override StateBase Idle { get; protected set; }
         public override StateBase Attack { get; protected set; }
         public override StateBase Movement { get; protected set; }
@@ -26,6 +27,7 @@ namespace ShipLogic.Fighter
 
         public FighterCommander(ShipBase ship) : base(ship, new FighterAttackLogic(ship))
         {
+            Route.OnEndPointsForMovement += UpdatePoints;
         }
 
         public void InitGroup(IShipGroup group)
@@ -35,11 +37,11 @@ namespace ShipLogic.Fighter
                 Debug.LogError("Group is already initialized");
                 return;
             }
-            
+
             _group = group;
             _group.OnUpdatePositionsInGroup += UpdatePointForMovementGroup;
         }
-        
+
         protected override void InitStateMachineAndStates()
         {
             Idle = new IdleState(Machine, this);
@@ -58,7 +60,7 @@ namespace ShipLogic.Fighter
                 _group.UpdatePointForMovement(target);
                 return;
             }
-            
+
             Route.AddPointForMovement(target.GetPointToApproximate());
         }
 
@@ -68,31 +70,44 @@ namespace ShipLogic.Fighter
             {
                 _group.UpdatePointForMovement(target);
             }
-            
+
             base.SetPointForMovementToEnemy(target);
         }
 
+        private void UpdatePoints()
+        {
+            var target = SpaceMap.Map.GetSectorWithHighWeightForShip(Ship.PlayerType);
+
+            var points = target.GetPointsInSector();
+            Route.AddPointForMovementRange(points);
+        }
+        
         private void UpdatePointForMovementGroup(Vector3[] positions)
         {
             if (Ship.IsDead)
             {
                 return;
             }
-            
+
             var index = _group.GetIndexShip(this);
             if (index < 0 || index >= positions.Length)
             {
-                Debug.LogError($"Invalid ship index ({index})");
+                Route.AddPointForMovement(positions[0]);
                 return;
             }
-            
+
             Route.AddPointForMovement(positions[index]);
         }
 
         public override void Dispose()
         {
             base.Dispose();
-            _group.OnUpdatePositionsInGroup -= UpdatePointForMovementGroup;
+            Route.OnEndPointsForMovement -= UpdatePoints;
+            if (_group != null)
+            {
+                _group.OnUpdatePositionsInGroup -= UpdatePointForMovementGroup;
+                _group = null;
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Planets.PlayerPlanet;
+﻿using Planets.PlayerPlanet;
 using Players;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,18 +6,24 @@ using Utils;
 
 namespace UI.Dialog.InfoAboutPlayerPlanet
 {
-    public class InfoAboutPlayerPlanetDialog : DialogBase, IDisposable
+    public class InfoAboutPlayerPlanetDialog : DialogBase
     {
         [SerializeField] private Text _playerName;
         [SerializeField] private RectTransform _rect;
         [SerializeField] private CreatorShip _creatorShip;
         [SerializeField] private PlayerGoldQuantity _goldQuantity;
+        [SerializeField] private CreatingShipTime _creatingShipTime;
 
         private IPlayerPlanet _planet;
         private Transform _planetTransform;
 
         private bool _isInitialized;
-        
+
+        private void OnEnable()
+        {
+            Main.Instance.OnUpdateGame += CustomUpdate;
+        }
+
         public void Init(IPlayerPlanet planet, PlayerType player, Transform planetTransform)
         {
             if (_isInitialized)
@@ -29,11 +34,11 @@ namespace UI.Dialog.InfoAboutPlayerPlanet
             _planet = planet;
             _playerName.text = PlayerUtils.GetPlayerName(player);
             _planetTransform = planetTransform;
-            Main.Instance.OnUpdateGame += CustomUpdate;
             _isInitialized = true;
 
             _creatorShip.Init(planet.CreateRandomShipDebug);
             _goldQuantity.SetGoldValue(_planet.CurrentGold);
+            _creatingShipTime.SetColorSlider(Main.Instance.ColorStorage.GetColorForPlayer(player));
             _rect.PinUIObjectToObjectOnScene(_planetTransform.position);
         }
 
@@ -44,23 +49,27 @@ namespace UI.Dialog.InfoAboutPlayerPlanet
         
         private void CustomUpdate()
         {
-            
+            if (_planet.Production == null)
+            {
+                _creatingShipTime.ResetAll();
+                return;
+            }
+
+            var nameShip = PlayerUtils.GetShipName(_planet.Production.ShipType);
+            var currentTime = _planet.Production.CurrentTime;
+            var maxTime = _planet.Production.MaxTime;
+            _creatingShipTime.SetSlider(currentTime, 0, maxTime);
+            _creatingShipTime.SetShipName(nameShip);
         }
 
         public override void Hide()
         {
             base.Hide();
-            Dispose();
             _isInitialized = false;
         }
 
-        public void Dispose()
+        private void OnDisable()
         {
-            if (!_isInitialized)
-            {
-                return;
-            }
-            
             Main.Instance.OnUpdateGame -= CustomUpdate;
         }
     }

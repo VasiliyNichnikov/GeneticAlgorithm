@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Group;
 using Loaders;
 using Map;
 using Players;
+using Production;
+using ShipLogic;
 using ShipLogic.Editor;
 using SpaceObjects;
 using UI.Dialog.InfoAboutPlayerPlanet;
@@ -22,6 +23,7 @@ namespace Planets.PlayerPlanet
         public Vector3 LeftBottomPosition => _perimeter.LeftBottomPoint;
         public Vector3 RightTopPosition => _perimeter.RightTopPoint;
         public float CurrentGold => _goldManager.CurrentGold;
+        public ShipProductionQueue.Production Production => _shipProductionQueue.CurrentProduction;
         public PlanetType Type => PlanetType.Player;
         
         [SerializeField] private PlayerType _player;
@@ -30,20 +32,16 @@ namespace Planets.PlayerPlanet
         [SerializeField] private PerimeterOfObject _perimeter;
         [SerializeField] private MeshRenderer _renderer;
         [SerializeField] private PlanetClickHandler _clickHandler;
-        
+
+        private ShipProductionQueue _shipProductionQueue;
         private PlayerGoldManager _goldManager;
         private InfoAboutPlayerPlanetDialog _playerPlanetDialog;
 
-        private void Start()
-        {
-            Init();
-        }
-
-        private void Init()
+        public void Init()
         {
             SpaceMap.Map.AddObjectOnMap(this);
-            // todo эти параметры нужно будет брать из настроек
-            _goldManager = new PlayerGoldManager(500);
+            _goldManager = new PlayerGoldManager();
+            _shipProductionQueue = new ShipProductionQueue(_player, _startingPoint, _goldManager);
             _clickHandler.Init(this);
             InitMaterial();
 
@@ -56,7 +54,7 @@ namespace Planets.PlayerPlanet
         
         public Vector3 GetPointToApproximate()
         {
-            var emptyPoint = SpaceMap.Map.TryGetRandomEmptyPointAroundObject(this, 5, out var isFound);
+            var emptyPoint = SpaceMap.Map.TryGetRandomEmptyPointAroundObject(this, 4, out var isFound);
             if (!isFound)
             {
                 Debug.LogWarning("Not found empty point around object");
@@ -70,16 +68,25 @@ namespace Planets.PlayerPlanet
         {
             throw new NotImplementedException();
         }
-        
+
+        public void AddShipToProduction(ShipType type, Action<ShipBase> onCompleteProduction)
+        {
+            // todo пока через костыли, потом надо будет переделать
+            foreach (var characteristic in _characteristics)
+            {
+                var data = characteristic.ConvertToShipData();
+                if (data.ShipType == type)
+                {
+                    _shipProductionQueue.AddShipToProduction(data, onCompleteProduction);
+                    return;
+                }
+            }
+        }
+
         public void CreateRandomShipDebug()
         {
             var randomCharacteristics = _characteristics[Random.Range(0, _characteristics.Length)];
-            var ship = Main.Instance.ShipFactory.AddShipOnMap(_player, randomCharacteristics.ConvertToShipData());
-            ship.transform.position = _startingPoint.position;
-            if (ship.GetCommander() is ISupportedGroup shipInGroup)
-            {
-                Main.Instance.ShipGroupManager.AddShipInGroup(_player, shipInGroup);
-            }
+            _shipProductionQueue.AddShipToProduction(randomCharacteristics.ConvertToShipData(), null);
         }
 
         private void InitMaterial()

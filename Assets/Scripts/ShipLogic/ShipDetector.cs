@@ -8,9 +8,6 @@ using Utils.Ship;
 
 namespace ShipLogic
 {
-    /// <summary>
-    /// todo сейчас тут присутсвуют ошибки, нужно поправить
-    /// </summary>
     public class ShipDetector : MonoBehaviour, IShipDetector
     {
         public IReadOnlyCollection<ShipBase> Enemies => _foundEnemies;
@@ -30,7 +27,7 @@ namespace ShipLogic
         public void Init(ShipBase ship)
         {
             _ship = ship;
-            Main.Instance.ShipFactory.OnDestroyShip += TryRemoveFoundObject;
+            Main.Instance.ShipFactory.OnDestroyShip += TryRemoveFoundShip;
         }
 
         public void SetRadius(float radius)
@@ -101,9 +98,9 @@ namespace ShipLogic
             }
         }
 
-        public void TryRemoveFoundShip(IObjectOnMap enemy)
+        public void TryRemoveFoundShip(ShipBase enemy)
         {
-            TryAddFoundObject(enemy);
+            TryRemoveFoundObject(enemy);
         }
 
         private void TryRemoveFoundObject(IObjectOnMap detectedObject)
@@ -152,7 +149,7 @@ namespace ShipLogic
             objectList.Add(newObject);
         }
 
-        private void TryRemoveObjectFromList<T>(ICollection<T> objectList, T newObject)
+        private static void TryRemoveObjectFromList<T>(ICollection<T> objectList, T newObject)
         {
             if (!objectList.Contains(newObject))
             {
@@ -167,8 +164,11 @@ namespace ShipLogic
 
         public void Dispose()
         {
-            Main.Instance.ShipFactory.OnDestroyShip -= TryRemoveFoundObject;
-            _ship = null;
+            Main.Instance.ShipFactory.OnDestroyShip -= TryRemoveFoundShip;
+            _foundEnemies.Clear();
+            _foundAllies.Clear();
+            _foundPlanets.Clear();
+            _ship = null!;
         }
     }
 }
